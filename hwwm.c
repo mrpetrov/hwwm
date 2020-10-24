@@ -1435,11 +1435,11 @@ ActivateHeatingMode(const short HeatMode) {
     if ( CHeater ) current_state |= 8;
     /* make changes as needed */
     /* HeatMode's bits describe the peripherals desired state:
-        bit 0  (1) - pump 1
-        bit 1  (2) - pump 2
-        bit 2  (4) - valve
-        bit 3  (8) - heater wanted
-        bit 4 (16) - heater forced */
+        bit 1  (1) - pump 1
+        bit 2  (2) - pump 2
+        bit 3  (4) - valve
+        bit 4  (8) - heater wanted
+        bit 5 (16) - heater forced
     if (HeatMode & 1)  { TurnPump1On(); } else { TurnPump1Off(); }
     if (HeatMode & 2)  { TurnPump2On(); } else { TurnPump2Off(); }
     if (HeatMode & 4)  { TurnValveOn(); } else { TurnValveOff(); }
