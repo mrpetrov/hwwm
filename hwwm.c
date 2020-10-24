@@ -95,7 +95,7 @@ float sensors_prv[TOTALSENSORS+1] = { 0, -200, -200, -200, -200, -200 };
 /* HTTB == Hourly Target Temp Base for furnace water; NB 24:00 = 0;
  *  hwwm will get to the real target by substracting the outside temp
  *  from the values defined in this array */
-/*                                0    1    2    3    4    5    6    7    8    9   10  11  12  13  14   15  16  17  18  19  20  21  22  23*/
+/*                             0    1    2    3    4    5    6    7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
 short HTTB[24] = { 38, 36, 36, 36, 36, 38, 40, 40, 40, 40, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 40 };
 
 #define   currentHTTB       HTTB[current_timer_hour]
