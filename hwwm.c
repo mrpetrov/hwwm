@@ -1648,7 +1648,7 @@ main(int argc, char *argv[])
         AdjustHeatingModeForBatteryPower(HeatingMode);
         ActivateHeatingMode(HeatingMode);
         /* for the first 3 cycles  = 30 seconds - do not log anything */
-        if ( ProgramRunCycles > 2) LogData(HeatingMode);
+        if ( ProgramRunCycles > 2) { LogData(HeatingMode); }
         ProgramRunCycles++;
         if ( just_started ) { just_started--; }
         if ( need_to_read_cfg ) {
