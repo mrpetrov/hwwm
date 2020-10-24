@@ -124,10 +124,10 @@ long ctrlstatecycles[10] = { -1, 150000, 150000, 2200, 2200, 3333, 3333, 3333, 3
 #define   SCPump2               ctrlstatecycles[2]
 #define   SCValve               ctrlstatecycles[3]
 #define   SCHeater              ctrlstatecycles[4]
-#define   SCCCPin1              ctrlstatecycles[5]
-#define   SCCCPin2              ctrlstatecycles[6]
-#define   SCCCPin3              ctrlstatecycles[7]
-#define   SCCCPin4              ctrlstatecycles[8]
+#define   SCCommsPin1              ctrlstatecycles[5]
+#define   SCCommsPin2              ctrlstatecycles[6]
+#define   SCCommsPin3              ctrlstatecycles[7]
+#define   SCCommsPin4              ctrlstatecycles[8]
 
 float TotalPowerUsed;
 float NightlyPowerUsed;
@@ -1450,11 +1450,10 @@ ActivateHeatingMode(const short HeatMode) {
     SCPump2++;
     SCValve++;
     SCHeater++;
-    
-    SCCCPin1++;
-    SCCCPin2++;
-    SCCCPin3++;
-    SCCCPin4++;
+    SCCommsPin1++;
+    SCCommsPin2++;
+    SCCommsPin3++;
+    SCCommsPin4++;
 
     /* Calculate total and night tariff electrical power used here: */
     if ( CHeater ) {
