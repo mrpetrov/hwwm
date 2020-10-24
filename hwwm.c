@@ -1271,6 +1271,7 @@ SelectIdleMode() {
     short wantP2on = 0;
     short wantVon = 0;
     short wantHon = 0;
+    short wantHPon = 0;
 
 	/* If collector is below 7 C and its getting cold -	turn pump on to prevent freezing */
 	if ((Tkolektor < 7)&&(Tenv < 3)) wantP2on = 1;
@@ -1350,10 +1351,32 @@ SelectIdleMode() {
         if (TboilerLow < nightEnergyTemp) { wantHon = 1; }
     }
 
+    /* Decide wheter to request heet pump heat or not  - a bit down it's expanded on none, low or high mode*/
+    if (Tkotel < furnace_water_target) {
+        wantP1on = 1;
+        wantHPon = 1;
+    }
+
     if ( wantP1on ) ModeSelected |= 1;
     if ( wantP2on ) ModeSelected |= 2;
     if ( wantVon )  ModeSelected |= 4;
     if ( wantHon )  ModeSelected |= 8;
+    if ( wantHPon )  {
+        switch (cfg.max_big_consumers) {
+        default:
+        case 1: /* if only 1 big consumer allowed - check if boiler heater is needed */
+            if ( !wantHon ) { ModeSelected |= 32; }
+        break;
+        case 2: /* if 2 big consumers allowed - decide on LOW or HIGH heat pump mode */
+            ModeSelected |= 32;
+            if ( wantHon ) ModeSelected |= 64;
+        break;
+        case 3: /* 3 big consumers allowed - you got thick cables, so we do not care what we turn on */
+            ModeSelected |= 32;
+            ModeSelected |= 64;
+        break;
+        }
+    }
     return ModeSelected;
 }
 
@@ -1396,7 +1419,7 @@ SelectHeatingMode() {
     return ModeSelected;
 }
 
-void TurnPump1Off()  { if (CPump1 && !CValve && (SCPump1 > 5) && (SCValve > 5))
+void TurnPump1Off()  { if (CPump1 && !CValve && !CCommsPin1 && (SCPump1 > 5) && (SCValve > 5))
 { CPump1 = 0; SCPump1 = 0; } }
 void TurnPump1On()   { if (cfg.use_pump1 && (!CPump1) && (SCPump1 > 2)) { CPump1 = 1; SCPump1 = 0; } }
 void TurnPump2Off()  { if (CPump2 && (SCPump2 > 5)) { CPump2  = 0; SCPump2 = 0; } }
@@ -1405,6 +1428,10 @@ void TurnValveOff()  { if (CValve && (SCValve > 17)) { CValve  = 0; SCValve = 0;
 void TurnValveOn()   { if (!CValve && (SCValve > 5)) { CValve  = 1; SCValve = 0; } }
 void TurnHeaterOff() { if (CHeater && (SCHeater > 17)) { CHeater = 0; SCHeater = 0; } }
 void TurnHeaterOn()  { if ((!CHeater) && (SCHeater > 29)) { CHeater = 1; SCHeater = 0; } }
+void TurnHeatPumpLowOff() { if (CCommsPin1 && (SCCommsPin1 > 29)) { CCommsPin1 = 0; SCCommsPin1 = 0; } }
+void TurnHeatPumpLowOn()  { if (CPump1 && (SCHeater > 2)) { CCommsPin1 = 1; SCCommsPin1 = 0; } 
+void TurnHeatPumpHighOff() { if (CCommsPin2 && (SCCommsPin2 > 29)) { CCommsPin2 = 0; SCCommsPin2 = 0; } }
+void TurnHeatPumpHighOn()  { if (CPump1 && (SCHeater > 2)) { CCommsPin2 = 1; SCCommsPin2 = 0; } 
 
 void
 TryElecitricHeaterOn() {
@@ -1433,6 +1460,8 @@ ActivateHeatingMode(const short HeatMode) {
     if ( CPump2 ) current_state |= 2;
     if ( CValve ) current_state |= 4;
     if ( CHeater ) current_state |= 8;
+    if ( CCommsPin1 ) current_state |= 32;
+    if ( CCommsPin2 ) current_state |= 64;
     /* make changes as needed */
     /* HeatMode's bits describe the peripherals desired state:
         bit 1  (1) - pump 1
@@ -1440,12 +1469,17 @@ ActivateHeatingMode(const short HeatMode) {
         bit 3  (4) - valve
         bit 4  (8) - heater wanted
         bit 5 (16) - heater forced
+        bit 6 (32) - want heat pump LOW on
+        bit 7 (64) - want heat pump HIGH on */
     if (HeatMode & 1)  { TurnPump1On(); } else { TurnPump1Off(); }
     if (HeatMode & 2)  { TurnPump2On(); } else { TurnPump2Off(); }
     if (HeatMode & 4)  { TurnValveOn(); } else { TurnValveOff(); }
     if (HeatMode & 8)  { TryElecitricHeaterOn(); }
     if (HeatMode & 16) { TurnHeaterOn(); }
     if ( !(HeatMode & 24) ) { TurnHeaterOff(); }
+    if (HeatMode & 32)  { TurnHeatPumpLowOn(); } else { TurnHeatPumpLowOff(); }
+    if (HeatMode & 64)  { TurnHeatPumpHighOn(); } else { TurnHeatPumpHighOff(); }
+    
     SCPump1++;
     SCPump2++;
     SCValve++;
@@ -1480,6 +1514,8 @@ ActivateHeatingMode(const short HeatMode) {
     if ( CPump2 ) new_state |= 2;
     if ( CValve ) new_state |= 4;
     if ( CHeater ) new_state |= 8;
+    if ( CCommsPin1 ) new_state |= 32;
+    if ( CCommsPin2 ) new_state |= 64;
     /* if current state and new state are different... */
     if ( current_state != new_state ) {
         /* then put state on GPIO pins - this prevents lots of toggling at every 10s decision */
