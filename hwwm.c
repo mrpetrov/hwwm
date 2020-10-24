@@ -1614,7 +1614,7 @@ main(int argc, char *argv[])
                     } else {
                     /* No heating needed - decide how to idle */
                     HeatingMode = SelectIdleMode();
-                    HeatingMode |= 32;
+                    HeatingMode |= 128;
                 }
             }
             break;
@@ -1634,14 +1634,14 @@ main(int argc, char *argv[])
             if (BoilerHeatingNeeded()) {
                 HeatingMode = 8;
                 } else {
-                HeatingMode = 32;
+                HeatingMode = 128;
             }
             break;
             case 8: /* 8=AUTO ELECTICAL HEATER ONLY, DOES NOT CARE ABOUT SCHEDULE !!! */
             if (BoilerHeatingNeeded()) {
                 HeatingMode = 16;
                 } else {
-                HeatingMode = 32;
+                HeatingMode = 128;
             }
             break;
         }
