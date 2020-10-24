@@ -1222,26 +1222,26 @@ void
 LogData(short HM) {
     static char data[280];
     /* Log data like so:
-        Time(by log function) HOUR, TKOTEL,TSOLAR,TBOILERL,TBOILERH, BOILERTEMPWANTED,BOILERABSMAX,NIGHTBOOST,HM,
+        Time(by log function) HOUR, TKOTEL,TSOLAR,TBOILERL,TBOILERH,TENV, BOILERTEMPWANTED,BOILERABSMAX,NIGHTBOOST,HM,
     PUMP1,PUMP2,VALVE,EL_HEATER,POWERBYBATTERY, WATTSUSED,WATTSUSEDNIGHTTARIFF */
-    sprintf( data, "%2d, %6.3f,%6.3f,%6.3f,%6.3f, %2d,%2d,%d,%2d, %d,%d,%d,%d,%d, %5.3f,%5.3f",\
-    current_timer_hour, Tkotel, Tkolektor, TboilerLow, TboilerHigh, cfg.wanted_T, cfg.abs_max, \
+    sprintf( data, "%2d, %6.3f,%6.3f,%6.3f,%6.3f,%6.3f, %2d,%2d,%d,%2d, %d,%d,%d,%d,%d, %5.3f,%5.3f",\
+    current_timer_hour, Tkotel, Tkolektor, TboilerLow, TboilerHigh, Tenv, cfg.wanted_T, cfg.abs_max, \
     cfg.night_boost, HM, CPump1, CPump2, CValve, CHeater, CPowerByBattery, \
     TotalPowerUsed, NightlyPowerUsed );
     log_message(DATA_FILE, data);
 
-    sprintf( data, ",Temp1,%5.3f\n_,Temp2,%5.3f\n_,Temp3,%5.3f\n_,Temp4,%5.3f\n"\
+    sprintf( data, ",Temp1,%5.3f\n_,Temp2,%5.3f\n_,Temp3,%5.3f\n_,Temp4,%5.3f,Temp5,%5.3f\n"\
     "_,Pump1,%d\n_,Pump2,%d\n_,Valve,%d\n_,Heater,%d\n_,PoweredByBattery,%d\n"\
     "_,TempWanted,%d\n_,BoilerTabsMax,%d\n_,ElectricityUsed,%5.3f\n_,ElectricityUsedNT,%5.3f",\
-    Tkotel, Tkolektor, TboilerHigh, TboilerLow, CPump1, CPump2,\
+    Tkotel, Tkolektor, TboilerHigh, TboilerLow, Tenv, CPump1, CPump2,\
     CValve, CHeater, CPowerByBattery, cfg.wanted_T, cfg.abs_max,\
     TotalPowerUsed, NightlyPowerUsed );
     log_msg_ovr(TABLE_FILE, data);
 
-    sprintf( data, "{Tkotel:%5.3f,Tkolektor:%5.3f,TboilerH:%5.3f,TboilerL:%5.3f,"\
+    sprintf( data, "{Tkotel:%5.3f,Tkolektor:%5.3f,TboilerH:%5.3f,TboilerL:%5.3f,Tenv:%5.3f,"\
     "PumpFurnace:%d,PumpSolar:%d,Valve:%d,Heater:%d,PoweredByBattery:%d,"\
     "TempWanted:%d,BoilerTabsMax:%d,ElectricityUsed:%5.3f,ElectricityUsedNT:%5.3f}",\
-    Tkotel, Tkolektor, TboilerHigh, TboilerLow, CPump1, CPump2,\
+    Tkotel, Tkolektor, TboilerHigh, TboilerLow, Tenv, CPump1, CPump2,\
     CValve, CHeater, CPowerByBattery, cfg.wanted_T, cfg.abs_max,\
     TotalPowerUsed, NightlyPowerUsed );
     log_msg_cln(JSON_FILE, data);
