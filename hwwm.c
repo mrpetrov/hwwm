@@ -1407,7 +1407,7 @@ void TurnHeaterOff() { if (CHeater && (SCHeater > 17)) { CHeater = 0; SCHeater =
 void TurnHeaterOn()  { if ((!CHeater) && (SCHeater > 29)) { CHeater = 1; SCHeater = 0; } }
 
 void
-RequestElectricHeat() {
+TryElecitricHeaterOn() {
     /* Do the check with config to see if its OK to use electric heater,
     for example: if its on "night tariff" - switch it on */
     /* Determine current time: */
@@ -1439,11 +1439,11 @@ ActivateHeatingMode(const short HeatMode) {
         bit 1  (2) - pump 2
         bit 2  (4) - valve
         bit 3  (8) - heater wanted
-    bit 4 (16) - heater forced */
+        bit 4 (16) - heater forced */
     if (HeatMode & 1)  { TurnPump1On(); } else { TurnPump1Off(); }
     if (HeatMode & 2)  { TurnPump2On(); } else { TurnPump2Off(); }
     if (HeatMode & 4)  { TurnValveOn(); } else { TurnValveOff(); }
-    if (HeatMode & 8)  { RequestElectricHeat(); }
+    if (HeatMode & 8)  { TryElecitricHeaterOn(); }
     if (HeatMode & 16) { TurnHeaterOn(); }
     if ( !(HeatMode & 24) ) { TurnHeaterOff(); }
     SCPump1++;
