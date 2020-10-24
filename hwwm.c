@@ -1435,9 +1435,9 @@ void TurnValveOn()   { if (!CValve && (SCValve > 5)) { CValve  = 1; SCValve = 0;
 void TurnHeaterOff() { if (CHeater && (SCHeater > 17)) { CHeater = 0; SCHeater = 0; } }
 void TurnHeaterOn()  { if ((!CHeater) && (SCHeater > 29)) { CHeater = 1; SCHeater = 0; } }
 void TurnHeatPumpLowOff() { if (CCommsPin1 && (SCCommsPin1 > 29)) { CCommsPin1 = 0; SCCommsPin1 = 0; } }
-void TurnHeatPumpLowOn()  { if (CPump1 && (SCHeater > 2)) { CCommsPin1 = 1; SCCommsPin1 = 0; } 
+void TurnHeatPumpLowOn()  { if (CPump1 && (SCHeater > 2)) { CCommsPin1 = 1; SCCommsPin1 = 0; } }
 void TurnHeatPumpHighOff() { if (CCommsPin2 && (SCCommsPin2 > 29)) { CCommsPin2 = 0; SCCommsPin2 = 0; } }
-void TurnHeatPumpHighOn()  { if (CPump1 && (SCHeater > 2)) { CCommsPin2 = 1; SCCommsPin2 = 0; } 
+void TurnHeatPumpHighOn()  { if (CPump1 && (SCHeater > 2)) { CCommsPin2 = 1; SCCommsPin2 = 0; } }
 
 void
 TryElecitricHeaterOn() {
