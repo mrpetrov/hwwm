@@ -210,6 +210,8 @@ struct cfg_struct
     int     night_boost;
     char    abs_max_str[MAXLEN];
     int     abs_max;
+    char    max_big_consumers_str[MAXLEN];
+    int     max_big_consumers;
 }
 cfg_struct;
 
@@ -293,6 +295,13 @@ rangecheck_abs_max_temp( int t )
 }
 
 void
+rangecheck_max_big_consumers( int t )
+{
+    if (t < 1) t = 1;
+    if (t > 3) t = 3;
+}
+
+void
 rangecheck_day_of_month( int d )
 {
     if (d < 1) d = 1;
@@ -310,6 +319,7 @@ SetDefaultPINs() {
     cfg.commspin2_pin = 18;
     cfg.commspin3_pin = 27;
     cfg.commspin4_pin = 22;
+    cfg.max_big_consumers = 1;
 }
 
 void
@@ -492,6 +502,8 @@ parse_config()
             strncpy (cfg.night_boost_str, value, MAXLEN);
             else if (strcmp(name, "abs_max")==0)
             strncpy (cfg.abs_max_str, value, MAXLEN);
+            else if (strcmp(name, "max_big_consumers")==0)
+            strncpy (cfg.max_big_consumers_str, value, MAXLEN);
         }
         /* Close file */
         fclose (fp);
@@ -584,6 +596,13 @@ parse_config()
     i = atoi( buff );
     cfg.abs_max = i;
     rangecheck_abs_max_temp( cfg.abs_max );
+
+
+    strcpy( buff, cfg.max_big_consumers_str );
+    i = atoi( buff );
+    cfg.max_big_consumers = i;
+    rangecheck_max_big_consumers( cfg.max_big_consumers );
+
 
     /* Prepare log messages with sensor paths and write them to log file */
     sprintf( buff, "Furnace temp sensor file: %s", cfg.tkotel_sensor );
