@@ -1,0 +1,51 @@
+Task: to develop software to make decisions for the control of 2 pumps, a valve, an electric heater and a heat pump system based on the information about the ambient temperature and the water in the installation in several key places
+
+Scheme of hybrid heating installation:
+
+The installation consists of a solid fuel boiler, a boiler with two coils, a draining solar collector, a heat pump installation.
+There are two water pumps - one supplies cold water to the boiler inlet, and the other moves the water in the solar collector.
+The heating of the water in the boiler is possible through the solar collector, the water from the boiler - through a valve, and directly through an electric heater.
+
+The software must make decisions for the control of the valve, the pumps, the electric heater and the preparation of commands for the heat pump system.
+
+The aim is to pursue 2 goals - the desired temperature of the water in the boiler and the desired temperature of the water coming out of the boiler.
+
+For the target water temperature from the boiler, the system will use a table with intermediate hourly temperatures, and the final target temperature is calculated by subtracting the ambient temperature from the intermediate hourly temperature.
+
+The intermediate temperatures by hours from 0 to 23 are as follows:
+38, 36, 36, 36, 36, 38, 40, 40, 40, 40, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 40
+
+Thus, for example at an ambient 5 ° C in 0 hours the final target joint becomes:
+goal = 38 - 5
+target = 33 ° C
+
+At ambient -5 ° C in 0 hours the final target joint:
+target = 38 - (-5)
+target = 43 ° C
+
+The system has information about the power of each of the controls, as well as the maximum allowable power (configurable).
+
+The purpose of the controller is to reach the target temperatures in the most economical way possible.
+
+The controller must read the temperatures from the sensors at least once a minute, and either store this information locally or send it to a remote system.
+
+In order to make better management decisions, temperature readings can be done more often - as long as the sensors allow it.
+
+Controller operating modes:
+• heating the boiler through the panel;
+• heating the boiler through the boiler;
+• heating of the electric boiler;
+• heating of the boiler installation through the panel / boiler;
+• emergency heat transfer - the valve opens, the collector pump is activated
+• boiler accident:
+  • - the temperature of the fluid leaving the boiler is> = 80 + ° C - a message is sent;
+  • - if the temperatures of the other bodies are normal - emergency heat transfer is activated;
+• boiler accident:
+  • - the water temperature in the boiler is> = 88 ° C - a message is sent;
+  • - if the temperatures of the other bodies are normal - emergency heat transfer is activated;
+• crash panel:
+  • - the temperature of the fluid in the collector is> = 100 ° C - a message is sent;
+  • - the temperature of the fluid in the collector is <= 5 ° C - a message is sent;
+  • - if the temperatures of the other bodies are normal - emergency heat transfer is activated;
+• off / waiting:
+  • - the required water temperature in the boiler has been reached, there are no accidents

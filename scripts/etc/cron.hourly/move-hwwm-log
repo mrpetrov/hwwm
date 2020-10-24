@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# append new data from hwwm log file in RAM drive to /var/log
+cp /run/shm/hwwm_data.log /var/log/hwwm_data.log.new
+rm /run/shm/hwwm_data.log
+cat /var/log/hwwm_data.log.new >> /var/log/hwwm_data.log
+rm /var/log/hwwm_data.log.new
+
+#EOF
