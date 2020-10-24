@@ -4,7 +4,7 @@
 * Raspberry Pi home warm water manager which uses 1wire and GPIO.
 * Plamen Petrov
 *
-* hwwm is Plamen's custom solar controller, based on the Raspberry Pi (2,3,4).
+* hwwm is Plamen's custom home warm water controller, based on the Raspberry Pi (2,3,4).
 * Data is gathered and logged every 10 seconds from 5 DS18B20 waterproof sensors,
 * 4 relays are controlled via GPIO, and a GPIO pin is read to note current
 * power source: grid or battery backed UPS. Commands for a counterpart system are
@@ -330,7 +330,7 @@ SetDefaultCfg() {
     cfg.use_pump2 = 1;
     cfg.day_to_reset_Pcounters = 4;
     cfg.night_boost = 0;
-    cfg.abs_max = 47;
+    cfg.abs_max = 63;
 
     nightEnergyTemp = 0;
     sensor_paths[0] = (char *) &cfg.tkotel_sensor;
