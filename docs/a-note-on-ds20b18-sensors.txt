@@ -1,0 +1,10 @@
+https://raspberrypi.stackexchange.com/questions/71563/how-to-set-precision-of-ds18b20-via-w1-therm
+
+
+Writing a value between 9 and 12 to the sysfs w1_slave file will change the precision of the sensor for the next readings. This value is in (volatile) SRAM, so it is reset when the sensor gets power-cycled.
+
+To store the current precision configuration into EEPROM, the value 0 has to be written to the sysfs w1_slave file. Since the EEPROM has a limited amount of writes (>50k), this command should be used wisely.
+
+
+w1_therm documentation on kernel.org
+https://www.kernel.org/doc/Documentation/w1/slaves/w1_therm
