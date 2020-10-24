@@ -187,7 +187,7 @@ struct cfg_struct
     char    commspin3_pin_str[MAXLEN];
     int     commspin3_pin;
     char    commspin4_pin_str[MAXLEN];
-    int     commspin5_pin;
+    int     commspin4_pin;
     char    invert_output_str[MAXLEN];
     int     invert_output;
     char    mode_str[MAXLEN];
