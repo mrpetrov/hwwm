@@ -1163,8 +1163,8 @@ GetCurrentTime() {
 
     current_timer_hour = atoi( buff );
     
-    /* do furnace water target temp adjusment based on the environment temp */
-    furnace_water_target = currentHTTB - Tenv;
+    /* do furnace water target temp adjusment based on the environment temp, if it looks reasonable */
+    if ( (Tenv > -30) && (Tenv < 50) ) { furnace_water_target = currentHTTB - Tenv; }
 
     if ((current_timer_hour == 8) && ((ProgramRunCycles % (6*60)) == 0)) must_check = 1;
 
