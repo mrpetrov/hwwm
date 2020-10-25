@@ -1406,6 +1406,7 @@ SelectHeatingMode() {
     short wantP2on = 0;
     short wantVon = 0;
     short wantHon = 0;
+    short activeLoads = 0;
 
     /* First get what the idle routine would do: */
     ModeSelected = SelectIdleMode();
@@ -1429,6 +1430,29 @@ SelectHeatingMode() {
                and make sure ETC pump is NOT running...*/
             if ((!CValve && (SCValve > 15))&&(!CPump2)) wantHon = 1;
         }
+    }
+
+    /* if electrical heater is needed - decide if it can be turned on*/
+    if ( wantHon ) {
+        /* start by counting what we would want to be turned on */
+        activeLoads++;
+        if ( (ModeSelected&32)==32 ) activeLoads++;
+        if ( (ModeSelected&64)==64 ) activeLoads++;
+        /* if we are too heavy - try to shed some wheight off*/
+        if ( activeLoads > cfg.max_big_consumers ) {
+             /* check if heat pump HIGH can be switched off */
+             if ( ( (ModeSelected&64)==64 ) && (CCommsPin2 && (SCCommsPin2 > 5)) ) {
+                    ModeSelected -= 64;
+                    activeLoads--;
+                 }
+             /* check if heat pump LOW can be switched off */
+             if ( ( (ModeSelected&32)==32 ) && (CCommsPin1 && (SCCommsPin1 > 5)) ) {
+                    ModeSelected -= 32;
+                    activeLoads--;
+                 }
+        }
+        /* in the end - if we got no room for electrical heater - it must stay OFF */
+        if ( activeLoads >= cfg.max_big_consumers ) wantHon = 0;
     }
 
     if ( wantP1on ) ModeSelected |= 1;
