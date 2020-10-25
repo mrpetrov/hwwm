@@ -1247,7 +1247,7 @@ LogData(short HM) {
     if ((HM&256)==256) sprintf( data + strlen(data), " idle");
     log_message(DATA_FILE, data);
 
-    sprintf( data, ",Temp1,%5.3f\n_,Temp2,%5.3f\n_,Temp3,%5.3f\n_,Temp4,%5.3f,Temp5,%5.3f\n"\
+    sprintf( data, ",Temp1,%5.3f\n_,Temp2,%5.3f\n_,Temp3,%5.3f\n_,Temp4,%5.3f\n_,Temp5,%5.3f\n"\
     "_,Pump1,%d\n_,Pump2,%d\n_,Valve,%d\n_,Heater,%d\n_,PoweredByBattery,%d\n"\
     "_,TempWanted,%d\n_,BoilerTabsMax,%d\n_,ElectricityUsed,%5.3f\n_,ElectricityUsedNT,%5.3f",\
     Tkotel, Tkolektor, TboilerHigh, TboilerLow, Tenv, CPump1, CPump2,\
