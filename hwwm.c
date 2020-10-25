@@ -1376,11 +1376,10 @@ SelectIdleMode() {
         break;
         case 2: /* if 2 big consumers allowed - decide on LOW or HIGH heat pump mode */
             ModeSelected |= 32;
-            if ( wantHon ) ModeSelected |= 64;
+            if ( !wantHon ) { ModeSelected |= 64; }
         break;
         case 3: /* 3 big consumers allowed - you got thick cables, so we do not care what we turn on */
-            ModeSelected |= 32;
-            ModeSelected |= 64;
+            ModeSelected |= 32 + 64;
         break;
         }
     }
@@ -1438,9 +1437,9 @@ void TurnValveOff()  { if (CValve && (SCValve > 17)) { CValve  = 0; SCValve = 0;
 void TurnValveOn()   { if (!CValve && (SCValve > 5)) { CValve  = 1; SCValve = 0; } }
 void TurnHeaterOff() { if (CHeater && (SCHeater > 29)) { CHeater = 0; SCHeater = 0; } }
 void TurnHeaterOn()  { if ((!CHeater) && (SCHeater > 29)) { CHeater = 1; SCHeater = 0; } }
-void TurnHeatPumpLowOff()  { if (CCommsPin1 && (SCCommsPin1 > 29)) { CCommsPin1 = 0; SCCommsPin1 = 0; } }
+void TurnHeatPumpLowOff()  { if (CCommsPin1 && (SCCommsPin1 > 5)) { CCommsPin1 = 0; SCCommsPin1 = 0; } }
 void TurnHeatPumpLowOn()  { if (CPump1 && (SCHeater > 2)) { CCommsPin1 = 1; SCCommsPin1 = 0; } }
-void TurnHeatPumpHighOff()  { if (CCommsPin2 && (SCCommsPin2 > 29)) { CCommsPin2 = 0; SCCommsPin2 = 0; } }
+void TurnHeatPumpHighOff()  { if (CCommsPin2 && (SCCommsPin2 > 5)) { CCommsPin2 = 0; SCCommsPin2 = 0; } }
 void TurnHeatPumpHighOn()  { if (CPump1 && (SCHeater > 2)) { CCommsPin2 = 1; SCCommsPin2 = 0; } }
 void TurnCommsPin4Off()  { if (CCommsPin4 && (SCCommsPin4 > 17)) { CCommsPin4 = 0; SCCommsPin4 = 0; } }
 void TurnCommsPin4On()  { CCommsPin4 = 1; SCCommsPin4 = 0; }
@@ -1530,6 +1529,7 @@ ActivateHeatingMode(const short HeatMode) {
     if ( CHeater ) new_state |= 8;
     if ( CCommsPin1 ) new_state |= 32;
     if ( CCommsPin2 ) new_state |= 64;
+    if ( CCommsPin4 ) new_state |= 128;
     /* if current state and new state are different... */
     if ( current_state != new_state ) {
         /* then put state on GPIO pins - this prevents lots of toggling at every 10s decision */
