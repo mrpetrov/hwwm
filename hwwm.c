@@ -1092,26 +1092,22 @@ ReadExternalPower() {
 void
 ControlStateToGPIO() {
     /* put state on GPIO pins */
+    GPIOWrite( cfg.commspin1_pin,  CCommsPin1 );
+    GPIOWrite( cfg.commspin2_pin,  CCommsPin2 );
+    GPIOWrite( cfg.commspin3_pin,  CCommsPin3 );
+    GPIOWrite( cfg.commspin4_pin,  CCommsPin4 );
     if (cfg.invert_output) {
             GPIOWrite( cfg.pump1_pin, !CPump1 );
             GPIOWrite( cfg.pump2_pin, !CPump2 );
             GPIOWrite( cfg.valve1_pin, !CValve );
             GPIOWrite( cfg.el_heater_pin,  !CHeater );
-            GPIOWrite( cfg.commspin1_pin,  !CCommsPin1 );
-            GPIOWrite( cfg.commspin2_pin,  !CCommsPin2 );
-            GPIOWrite( cfg.commspin3_pin,  !CCommsPin3 );
-            GPIOWrite( cfg.commspin4_pin,  !CCommsPin4 );
-        }
+    }
     else {
             GPIOWrite( cfg.pump1_pin, CPump1 );
             GPIOWrite( cfg.pump2_pin, CPump2 );
             GPIOWrite( cfg.valve1_pin, CValve );
             GPIOWrite( cfg.el_heater_pin,  CHeater );
-            GPIOWrite( cfg.commspin1_pin,  CCommsPin1 );
-            GPIOWrite( cfg.commspin2_pin,  CCommsPin2 );
-            GPIOWrite( cfg.commspin3_pin,  CCommsPin3 );
-            GPIOWrite( cfg.commspin4_pin,  CCommsPin4 );
-        }
+    }
 }
 
 void
