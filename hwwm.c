@@ -100,7 +100,7 @@ short HTTB[24] = { 38, 36, 36, 36, 36, 38, 40, 40, 40, 40, 43, 43, 43, 43, 43, 4
 
 #define   currentHTTB       HTTB[current_timer_hour]
 
-float furnace_water_target = 20;
+float furnace_water_target = 22.33;
 
 /* current controls state - e.g. set on last decision making */
 short controls[11] = { -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -1221,7 +1221,7 @@ LogData(short HM) {
     /* Log data like so:
         Time(by log function) HOUR, TKOTEL,TSOLAR,TBOILERL,TBOILERH,TENV, BOILERTEMPWANTED,BOILERABSMAX,
     furnace_water_target,NIGHTBOOST,HM, WATTSUSED,WATTSUSEDNIGHTTARIFF PUMP1,PUMP2,VALVE,EL_HEATER,POWERBYBATTERY,  */
-    sprintf( data, "%2d, %6.3f,%6.3f,%6.3f,%6.3f,%6.3f, %2d,%2d,%2.2f,%d,%2d, %5.3f,%5.3f",\
+    sprintf( data, "%2d, %6.3f,%6.3f,%6.3f,%6.3f,%6.3f, %2d,%2d,%4.1f,%d,%2d, %5.3f,%5.3f",\
     current_timer_hour, Tkotel, Tkolektor, TboilerLow, TboilerHigh, Tenv, cfg.wanted_T, cfg.abs_max, \
     furnace_water_target, cfg.night_boost, HM, TotalPowerUsed, NightlyPowerUsed );
     if (CPump1) sprintf( data + strlen(data), " P1");
