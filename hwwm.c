@@ -118,7 +118,7 @@ short controls[11] = { -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 #define   CCommsPin4          controls[10] // pin/bit to signal we on battery power
 
 /* controls state cycles - zeroed on change to state */
-long ctrlstatecycles[10] = { -1, 150000, 150000, 2200, 2200, 3333, 3333, 3333, 3333, -1 };
+long ctrlstatecycles[10] = { -1, 150000, 150000, 2200, 2200, 32, 32, 0, 0, -1 };
 
 #define   SCPump1               ctrlstatecycles[1]
 #define   SCPump2               ctrlstatecycles[2]
@@ -1234,7 +1234,7 @@ LogData(short HM) {
     if ((HM&32)==32) sprintf( data + strlen(data), " C1");
     if ((HM&64)==64) sprintf( data + strlen(data), " C2");
     if ((HM&128)==128) sprintf( data + strlen(data), " C4");
-    sprintf( data + strlen(data), "  GOT:");
+    sprintf( data + strlen(data), "; GOT:");
     if (CPump1) sprintf( data + strlen(data), " P1");
     if (CPump2) sprintf( data + strlen(data), " P2");
     if (CValve) sprintf( data + strlen(data), " V");
@@ -1368,32 +1368,29 @@ SelectIdleMode() {
         if (TboilerLow < nightEnergyTemp) { wantHon = 1; }
     }
 
-    /* Decide wheter to request heet pump heat or not  - a bit down it's expanded on none, low or high mode*/
+    /* Decide wheter to request heet pump heat or not */
     if (Tkotel < furnace_water_target) {
-        wantP1on = 1;
-        wantHPon = 1;
+        switch (cfg.max_big_consumers) {
+        default:
+        case 1: /* if only 1 big consumer allowed - check if boiler heater is needed */
+            if ( (!CHeater) && (SCHeater > 0) && !CCommsPin1 && (SCCommsPin1 > 3)) { ModeSelected |= 32; }
+        break;
+        case 2: /* if 2 big consumers allowed - decide on LOW or HIGH heat pump mode */
+            ModeSelected |= 32;
+            if ( (!CHeater) && (SCHeater > 0) && !CCommsPin2 && (SCCommsPin2 > 6)) { ModeSelected |= 64; }
+        break;
+        case 3: /* 3 big consumers allowed - you got thick cables, so we do not care what we turn on */
+            ModeSelected |= 32 + 64;
+        break;
+        }
+        /* after the swtich above - request pump 1 only if needed */
+        if ( (ModeSelected & 32) ) wantP1on = 1;
     }
 
     if ( wantP1on ) ModeSelected |= 1;
     if ( wantP2on ) ModeSelected |= 2;
     if ( wantVon )  ModeSelected |= 4;
     if ( wantHon )  ModeSelected |= 8;
-    if ( wantHPon )  {
-        switch (cfg.max_big_consumers) {
-        default:
-        case 1: /* if only 1 big consumer allowed - check if boiler heater is needed */
-            if ( !wantHon ) { ModeSelected |= 32; }
-        break;
-        case 2: /* if 2 big consumers allowed - decide on LOW or HIGH heat pump mode */
-            ModeSelected |= 32;
-            if ( !wantHon ) { ModeSelected |= 64; }
-        break;
-        case 3: /* 3 big consumers allowed - you got thick cables, so we do not care what we turn on */
-            ModeSelected |= 32 + 64;
-        break;
-        }
-    }
-
     if ( CPowerByBattery )  ModeSelected |= 128;
 
     return ModeSelected;
@@ -1433,28 +1430,30 @@ SelectHeatingMode() {
     }
 
     /* if electrical heater is needed - decide if it can be turned on*/
-    if ( wantHon ) {
-        /* start by counting what we would want to be turned on */
-        activeLoads++;
-        if ( (ModeSelected&32)==32 ) activeLoads++;
-        if ( (ModeSelected&64)==64 ) activeLoads++;
-        /* if we are too heavy - try to shed some wheight off*/
-        if ( activeLoads > cfg.max_big_consumers ) {
-             /* check if heat pump HIGH can be switched off */
-             if ( ( (ModeSelected&64)==64 ) && (CCommsPin2 && (SCCommsPin2 > 5)) ) {
-                    ModeSelected -= 64;
+    if ( wantHon ) activeLoads++; // for wantHon - we need to take into account
+    /* start by counting what we would want to be turned on */
+    if ( ModeSelected & 32 ) activeLoads++;
+    if ( ModeSelected & 64 ) activeLoads++;
+    /* if we are too heavy - try to shed some wheight off*/
+    if ( activeLoads >= cfg.max_big_consumers ) {
+         /* check if heat pump HIGH can be switched off */
+         if ( ModeSelected & 64 ) {
+            if (CCommsPin2 && (SCCommsPin2 > 59))  {
+                ModeSelected -= 64;
+                activeLoads--;
+            } }
+         if ( activeLoads >= cfg.max_big_consumers ) {
+             /* if still need to shed load - check if heat pump LOW can be switched off */
+         if ( ModeSelected & 32 ) {
+             if (CCommsPin1 && (SCCommsPin1 > 59)) {
+                    ModeSelected -= 32;
                     activeLoads--;
-                 }
-             if ( activeLoads >= cfg.max_big_consumers ) {
-                 /* if still need to shed load - check if heat pump LOW can be switched off */
-                 if ( ( (ModeSelected&32)==32 ) && (CCommsPin1 && (SCCommsPin1 > 5)) ) {
-                        ModeSelected -= 32;
-                        activeLoads--;
-                }
-             }
-        }
-        /* in the end - if we got no room for electrical heater - it must stay OFF */
-        if ( activeLoads > cfg.max_big_consumers ) wantHon = 0;
+             } }
+         }
+    }
+    /* in the end - if we got no room for electrical heater - it must stay OFF */
+    if (activeLoads > cfg.max_big_consumers) { 
+        wantHon = 0;
     }
 
     if ( wantP1on ) ModeSelected |= 1;
@@ -1473,10 +1472,10 @@ void TurnValveOff()  { if (CValve && (SCValve > 17)) { CValve  = 0; SCValve = 0;
 void TurnValveOn()   { if (!CValve && (SCValve > 5)) { CValve  = 1; SCValve = 0; } }
 void TurnHeaterOff() { if (CHeater && (SCHeater > 59)) { CHeater = 0; SCHeater = 0; } }
 void TurnHeaterOn()  { if ((!CHeater) && (SCHeater > 29)) { CHeater = 1; SCHeater = 0; } }
-void TurnHeatPumpLowOff()  { if (CCommsPin1 && (SCCommsPin1 > 5)) { CCommsPin1 = 0; SCCommsPin1 = 0; } }
-void TurnHeatPumpLowOn()  { if (CPump1 && (SCHeater > 2)) { CCommsPin1 = 1; SCCommsPin1 = 0; } }
-void TurnHeatPumpHighOff()  { if (CCommsPin2 && (SCCommsPin2 > 5)) { CCommsPin2 = 0; SCCommsPin2 = 0; } }
-void TurnHeatPumpHighOn()  { if (CPump1 && (SCHeater > 2)) { CCommsPin2 = 1; SCCommsPin2 = 0; } }
+void TurnHeatPumpLowOff()  { if (CCommsPin1 && (SCCommsPin1 > 59)) { CCommsPin1 = 0; SCCommsPin1 = 0; } }
+void TurnHeatPumpLowOn()  { if (!CCommsPin1 && (SCCommsPin1 > 35) && CPump1 && (SCHeater > 2)) { CCommsPin1 = 1; SCCommsPin1 = 0; } }
+void TurnHeatPumpHighOff()  { if (CCommsPin2 && (SCCommsPin2 > 59)) { CCommsPin2 = 0; SCCommsPin2 = 0; } }
+void TurnHeatPumpHighOn()  { if (!CCommsPin2 && (SCCommsPin2 > 15) && CPump1 && (SCHeater > 2)) { CCommsPin2 = 1; SCCommsPin2 = 0; } }
 void TurnCommsPin4Off()  { if (CCommsPin4 && (SCCommsPin4 > 17)) { CCommsPin4 = 0; SCCommsPin4 = 0; } }
 void TurnCommsPin4On()  { CCommsPin4 = 1; SCCommsPin4 = 0; }
 
