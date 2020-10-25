@@ -1445,11 +1445,13 @@ SelectHeatingMode() {
                     ModeSelected -= 64;
                     activeLoads--;
                  }
-             /* check if heat pump LOW can be switched off */
-             if ( ( (ModeSelected&32)==32 ) && (CCommsPin1 && (SCCommsPin1 > 5)) ) {
-                    ModeSelected -= 32;
-                    activeLoads--;
-                 }
+             if ( activeLoads >= cfg.max_big_consumers ) {
+                 /* if still need to shed load - check if heat pump LOW can be switched off */
+                 if ( ( (ModeSelected&32)==32 ) && (CCommsPin1 && (SCCommsPin1 > 5)) ) {
+                        ModeSelected -= 32;
+                        activeLoads--;
+                }
+             }
         }
         /* in the end - if we got no room for electrical heater - it must stay OFF */
         if ( activeLoads >= cfg.max_big_consumers ) wantHon = 0;
