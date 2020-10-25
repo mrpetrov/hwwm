@@ -621,8 +621,8 @@ parse_config()
     sprintf( buff, "Using COMMs GPIO pins (BCM mode) as follows: comms1: %d, comms2: %d, comms3: %d, "\
 	"comms4: %d ", cfg.commspin1_pin, cfg.commspin2_pin, cfg.commspin3_pin, cfg.commspin4_pin );
     log_message(LOG_FILE, buff);
-    sprintf( buff, "Using OUTPUT GPIO pins (BCM mode) as follows: furnace pump: %d, ETC pump: %d, boiler valve: %d, "\
-	"electrical heater: %d ", cfg.pump1_pin, cfg.pump2_pin, cfg.valve1_pin, cfg.el_heater_pin );
+    sprintf( buff, "Using OUTPUT GPIO pins (BCM mode) as follows: P1: %d, P2: %d, V: %d, "\
+	"H: %d ", cfg.pump1_pin, cfg.pump2_pin, cfg.valve1_pin, cfg.el_heater_pin );
     log_message(LOG_FILE, buff);
     if (cfg.invert_output) {
         sprintf( buff, "OUTPUT GPIO pins controlling is INVERTED - ON is LOW (0)" );
@@ -642,9 +642,11 @@ parse_config()
     }
     log_message(LOG_FILE, buff);
     /* Prepare log message part 2 and write it to log file */
-    sprintf( buff, "INFO: Furnace pump always on=%d, use furnace pump=%d, use solar pump=%d, reset P counters day=%d, "\
-    "night boiler boost=%d, absMAX=%d", cfg.pump1_always_on, cfg.use_pump1, cfg.use_pump2,\
-    cfg.day_to_reset_Pcounters, cfg.night_boost, cfg.abs_max );
+    sprintf( buff, "INFO: Furnace pump always on=%d, use furnace pump=%d, use solar pump=%d, reset P counters day=%d", 
+                cfg.pump1_always_on, cfg.use_pump1, cfg.use_pump2, cfg.day_to_reset_Pcounters);
+    log_message(LOG_FILE, buff);
+    sprintf( buff, "INFO: Night boiler boost=%d, absMAX=%d, max big consumers=%d", 
+                cfg.night_boost, cfg.abs_max, cfg.max_big_consumers );
     log_message(LOG_FILE, buff);
 	
     /* stuff for after parsing config file: */
