@@ -1222,10 +1222,20 @@ LogData(short HM) {
     static char data[280];
     /* Log data like so:
         Time(by log function) HOUR, TKOTEL,TSOLAR,TBOILERL,TBOILERH,TENV, BOILERTEMPWANTED,BOILERABSMAX,
-    furnace_water_target,NIGHTBOOST,HM, WATTSUSED,WATTSUSEDNIGHTTARIFF PUMP1,PUMP2,VALVE,EL_HEATER,POWERBYBATTERY,  */
-    sprintf( data, "%2d, %6.3f,%6.3f,%6.3f,%6.3f,%6.3f, %2d,%2d,%4.1f,%d,%2d, %5.3f,%5.3f",\
+    furnace_water_target,NIGHTBOOST, WATTSUSED,WATTSUSEDNIGHTTARIFF PUMP1,PUMP2,VALVE,EL_HEATER,POWERBYBATTERY,  */
+    sprintf( data, "%2d, %6.3f,%6.3f,%6.3f,%6.3f,%6.3f, %2d,%2d,%4.1f,%d, %5.3f,%5.3f, WANTED:",\
     current_timer_hour, Tkotel, Tkolektor, TboilerLow, TboilerHigh, Tenv, cfg.wanted_T, cfg.abs_max, \
-    furnace_water_target, cfg.night_boost, HM, TotalPowerUsed, NightlyPowerUsed );
+    furnace_water_target, cfg.night_boost, TotalPowerUsed, NightlyPowerUsed );
+    if ((HM&256)==256) sprintf( data + strlen(data), " idle");
+    if ((HM&1)==1) sprintf( data + strlen(data), " P1");
+    if ((HM&2)==2) sprintf( data + strlen(data), " P2");
+    if ((HM&4)==4) sprintf( data + strlen(data), " V");
+    if ((HM&8)==8) sprintf( data + strlen(data), " H");
+    if ((HM&16)==16) sprintf( data + strlen(data), " Hf");
+    if ((HM&32)==32) sprintf( data + strlen(data), " C1");
+    if ((HM&64)==64) sprintf( data + strlen(data), " C2");
+    if ((HM&128)==128) sprintf( data + strlen(data), " C4");
+    sprintf( data + strlen(data), "  GOT:");
     if (CPump1) sprintf( data + strlen(data), " P1");
     if (CPump2) sprintf( data + strlen(data), " P2");
     if (CValve) sprintf( data + strlen(data), " V");
