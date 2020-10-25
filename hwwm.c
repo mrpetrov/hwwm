@@ -1226,7 +1226,6 @@ LogData(short HM) {
     sprintf( data, "%2d, %6.3f,%6.3f,%6.3f,%6.3f,%6.3f, %2d,%2d,%4.1f,%d, %5.3f,%5.3f, WANTED:",\
     current_timer_hour, Tkotel, Tkolektor, TboilerLow, TboilerHigh, Tenv, cfg.wanted_T, cfg.abs_max, \
     furnace_water_target, cfg.night_boost, TotalPowerUsed, NightlyPowerUsed );
-    if ((HM&256)==256) sprintf( data + strlen(data), " idle");
     if ((HM&1)==1) sprintf( data + strlen(data), " P1");
     if ((HM&2)==2) sprintf( data + strlen(data), " P2");
     if ((HM&4)==4) sprintf( data + strlen(data), " V");
@@ -1244,7 +1243,8 @@ LogData(short HM) {
     if (CCommsPin2) sprintf( data + strlen(data), " C2");
     if (CCommsPin3) sprintf( data + strlen(data), " C3");
     if (CCommsPin4) sprintf( data + strlen(data), " C4");
-    if (CPowerByBattery) sprintf( data + strlen(data), " BAT");
+    if (CPowerByBattery) sprintf( data + strlen(data), " UPS");
+    if ((HM&256)==256) sprintf( data + strlen(data), " idle");
     log_message(DATA_FILE, data);
 
     sprintf( data, ",Temp1,%5.3f\n_,Temp2,%5.3f\n_,Temp3,%5.3f\n_,Temp4,%5.3f,Temp5,%5.3f\n"\
