@@ -1232,6 +1232,8 @@ LogData(short HM) {
     if (CHeater) sprintf( data + strlen(data), " H");
     if (CCommsPin1) sprintf( data + strlen(data), " C1");
     if (CCommsPin2) sprintf( data + strlen(data), " C2");
+    if (CCommsPin3) sprintf( data + strlen(data), " C3");
+    if (CCommsPin4) sprintf( data + strlen(data), " C4");
     if (CPowerByBattery) sprintf( data + strlen(data), " BAT");
     log_message(DATA_FILE, data);
 
