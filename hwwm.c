@@ -1454,7 +1454,7 @@ SelectHeatingMode() {
              }
         }
         /* in the end - if we got no room for electrical heater - it must stay OFF */
-        if ( activeLoads >= cfg.max_big_consumers ) wantHon = 0;
+        if ( activeLoads > cfg.max_big_consumers ) wantHon = 0;
     }
 
     if ( wantP1on ) ModeSelected |= 1;
