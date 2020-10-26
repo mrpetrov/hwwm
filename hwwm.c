@@ -1494,7 +1494,7 @@ ComputeWantedState() {
                 if ((!CCommsPin1 && (SCCommsPin1)) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* and if we can turn heater ON */
                     sprintf( data + strlen(data), " check");
-                    if (CanTurnHeaterOn()) wantHon = 1;
+                    wantHon = 1;
                     if (wantHon) sprintf( data + strlen(data), " OK!");
                 }
             }
@@ -1504,7 +1504,7 @@ ComputeWantedState() {
                 if ((!CHeater && (SCHeater)) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* and if we can turn heater ON */
                     sprintf( data + strlen(data), " check");
-                    if (CanTurnHeatPumpLowOn()) { StateDesired |= 32; }
+                    StateDesired |= 32;
                     if (StateDesired & 32) sprintf( data + strlen(data), " OK!");
                 }
             }
@@ -1517,7 +1517,7 @@ ComputeWantedState() {
                 if ( (SCCommsPin1) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* and if we can turn heater ON */
                     sprintf( data + strlen(data), " check");
-                    if (CanTurnHeaterOn()) wantHon = 1;
+                    wantHon = 1;
                     if (wantHon) sprintf( data + strlen(data), " OK!");
                 }
             }
@@ -1527,8 +1527,7 @@ ComputeWantedState() {
                 if ((SCHeater) && (!CCommsPin2 && (SCCommsPin2))) {
                      /* verify rules following */
                     sprintf( data + strlen(data), " check");
-                     if (CanTurnHeatPumpLowOn()) { StateDesired |= 32; }
-                     if (CanTurnHeatPumpHighOn()) { StateDesired |= 64; }
+                    StateDesired |= 96;
                     if (StateDesired & 32) sprintf( data + strlen(data), " OK1!");
                     if (StateDesired & 64) sprintf( data + strlen(data), " OK2!");
                  }
@@ -1539,17 +1538,17 @@ ComputeWantedState() {
                 if ((SCCommsPin1>2) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* verify rules following */
                     sprintf( data + strlen(data), " check1");
-                    if (CanTurnHeaterOn()) wantHon = 1;
+                    wantHon = 1;
                     if (wantHon) sprintf( data + strlen(data), " OK!");
                 }
                 /* for HP LOW - we can keep it on as long as it follows its rules */
-                if (CanTurnHeatPumpLowOn()) { StateDesired |= 32; }
+                StateDesired |= 32;
                 if (StateDesired & 32) sprintf( data + strlen(data), " OK1!");
                 /* for HP HIGH - boiler should not be needed and others should have settled */
                 if (!wantHon && (SCCommsPin1>2) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* check if turning HP high follows its rules */
                 sprintf( data + strlen(data), " check3");
-                    if (CanTurnHeatPumpHighOn()) { StateDesired |= 64; }
+                    StateDesired |= 64;
                     if (StateDesired & 64) sprintf( data + strlen(data), " OK2!");
                 }
             }
@@ -1560,7 +1559,9 @@ ComputeWantedState() {
                 /* avoid simultaneous switching */
                 if ((SCCommsPin1) && (SCCommsPin2>2)) {
                     /* verify rules following */
-                    if (CanTurnHeaterOn()) wantHon = 1;
+                    sprintf( data + strlen(data), " check1");
+                    wantHon = 1;
+                    if (wantHon) sprintf( data + strlen(data), " OK!");
                 }
             }
             if (mid_buf == 2) { /* we would like to use heat pump services */
@@ -1568,8 +1569,10 @@ ComputeWantedState() {
                 /* avoid simultaneous switching */
                 if ( SCHeater && SCCommsPin1 && (SCCommsPin2>3)) {
                     /* verify rules following */
-                     if (CanTurnHeatPumpLowOn()) { StateDesired |= 32; }
-                     if (CanTurnHeatPumpHighOn()) { StateDesired |= 64; }
+                    sprintf( data + strlen(data), " check");
+                     StateDesired |= 96;
+                    if (StateDesired & 32) sprintf( data + strlen(data), " OK1!");
+                    if (StateDesired & 64) sprintf( data + strlen(data), " OK2!");
                  }
             }
             if (mid_buf == 3) { /* we would like to use BOTH heat pump and heater */
@@ -1577,13 +1580,17 @@ ComputeWantedState() {
                 /* avoid simultaneous switching */
                 if ((SCCommsPin1) && (SCCommsPin2>2)) {
                     /* verify rules following */
-                    if (CanTurnHeaterOn()) wantHon = 1;
+                    sprintf( data + strlen(data), " check1");
+                    wantHon = 1;
+                    if (wantHon) sprintf( data + strlen(data), " OK!");
                 }
                 /* avoid simultaneous switching */
                 if ( SCHeater && SCCommsPin1 && (SCCommsPin2>3)) {
                     /* verify rules following */
-                     if (CanTurnHeatPumpLowOn()) { StateDesired |= 32; }
-                     if (CanTurnHeatPumpHighOn()) { StateDesired |= 64; }
+                    sprintf( data + strlen(data), " check2");
+                     StateDesired |= 96;
+                    if (StateDesired & 32) sprintf( data + strlen(data), " OK1!");
+                    if (StateDesired & 64) sprintf( data + strlen(data), " OK2!");
                  }
             }
         break;
