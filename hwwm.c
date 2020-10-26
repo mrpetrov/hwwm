@@ -1524,7 +1524,7 @@ ComputeWantedState() {
                     if (CanTurnHeaterOn()) wantHon = 1;
                 }
                 /* for HP LOW - we can keep it on as long as it follows its rules */
-                if ( (CanTurnHeatPumpLowOn() ) { StateDesired |= 32; }
+                if (CanTurnHeatPumpLowOn()) { StateDesired |= 32; }
                 /* for HP HIGH - boiler should not be needed and others should have settled */
                 if (!wantHon && (SCCommsPin1>2) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* check if turning HP high follows its rules */
