@@ -1441,7 +1441,7 @@ unsigned short CanTurnHeaterOn() {
     /* Do the check with config to see if its OK to use electric heater,
     for example: if its on "night tariff" - switch it on */
     /* Determine current time: */
-    if (CHeater && (SCHeater > 59)) { i=1; }
+    if (!CHeater && (SCHeater > 29)) { i=1; }
     if ( (current_timer_hour <= NEstop) || (current_timer_hour >= NEstart) ) {
             /* NIGHT TARIFF TIME */
             /* If heater use is allowed by config - turn it on */
@@ -1455,7 +1455,7 @@ unsigned short CanTurnHeaterOn() {
 }
 
 unsigned short CanTurnHeaterOff() {
-    if ((!CHeater) && (SCHeater > 29)) return 1;
+    if ((CHeater) && (SCHeater > 59)) return 1;
     else return 0;
 }
 
