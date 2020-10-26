@@ -1306,10 +1306,10 @@ unsigned short CanTurnValveOff() {
 
 unsigned short CanTurnHeaterOn() {
     unsigned short i = 0;
+    if (!CHeater && (SCHeater > 29)) { i=1; } else return 0;
     /* Do the check with config to see if its OK to use electric heater,
     for example: if its on "night tariff" - switch it on */
     /* Determine current time: */
-    if (!CHeater && (SCHeater > 29)) { i=1; }
     if ( (current_timer_hour <= NEstop) || (current_timer_hour >= NEstart) ) {
             /* NIGHT TARIFF TIME */
             /* If heater use is allowed by config - turn it on */
@@ -1320,6 +1320,7 @@ unsigned short CanTurnHeaterOn() {
             /* If heater use is allowed by config - turn it on */
             if (cfg.use_electric_heater_day) return i;
     }
+    return 0;
 }
 
 unsigned short CanTurnHeaterOff() {
