@@ -1283,63 +1283,16 @@ BoilerNeedsHeat() {
 
 short
 ComputeWantedState() {
-    short ModeSelected = 0;
+    short StateDesired = 0;
     short wantP1on = 0;
     short wantP2on = 0;
     short wantVon = 0;
     short wantHon = 0;
-    short wantHPon = 0;
+    short mid_buf = 0;
 
-	/* If collector is below 7 C and its getting cold -	turn pump on to prevent freezing */
+    /* EVACUATED TUBES COLLECTOR: EXTREMES PROTECTIONS */
+    /* If collector is below 7 C and its getting cold -	turn pump on to prevent freezing */
 	if ((Tkolektor < 7)&&(Tenv < 3)) wantP2on = 1;
-	/* Furnace is above 38 C - at these temps always run the pump */
-	if (Tkotel > 38) { wantP1on = 1; }
-	else {
-		/* below 38 C - check if it is cold to see if we need to run furnace pump:
-            if so - run furnace pump at least once every 10 minutes
-            we check if it is cold by looking at solar pump idle state - in the cold (-10C)
-            it runs at least once per 2 hours; so double that ;) */
-		if ((Tenv < 5)&&(SCPump2 < (6*60*4))&&(!CPump1)&&(SCPump1 > (6*10))) wantP1on = 1;
-	}
-    /* Furnace is above 20 C and rising slowly - turn pump on */
-    if ((Tkotel > 20)&&(Tkotel > (TkotelPrev+0.12))) wantP1on = 1;
-    /* Furnace temp is rising QUICKLY - turn pump on to limit furnace thermal shock */
-    if (Tkotel > (TkotelPrev+0.18)) wantP1on = 1;
-    /* Do the next checks for boiler heating if boiler is allowed to take heat in */
-    if ( (TboilerHigh < (float)cfg.abs_max) ||
-         (TboilerLow < (float)(cfg.abs_max - 2)) ) {
-        /* Use better heat source: */
-        if (Tkolektor > (Tkotel+2)) {
-            /* ETCs have heat in excess - build up boiler temp so expensive sources stay idle */
-            /* Require selected heat source to be near boiler hot end to avoid loosing heat
-            to the enviroment because of the system working */
-            if ((Tkolektor > (TboilerLow+12))&&(Tkolektor > (TboilerHigh-2))) wantP2on = 1;
-            /* Keep solar pump on while solar fluid is more than 5 C hotter than boiler lower end */
-            if ((CPump2) && (Tkolektor > (TboilerLow+4))) wantP2on = 1;
-        }
-        else {
-            /* Furnace has heat in excess - open the valve so boiler can build up
-            heat now and probably save on electricity use later on */
-            if ((Tkotel > (TboilerHigh+3)) || (Tkotel > (TboilerLow+9)))  {
-                wantVon = 1;
-                /* And if valve has been open for 90 seconds - turn furnace pump on */
-                if (CValve && (SCValve > 8)) wantP1on = 1;
-            }
-            /* Keep valve open while there is still heat to exploit */
-            if ((CValve) && (Tkotel > (TboilerLow+4))) wantVon = 1;
-        }
-    }
-    /* Run solar pump once every day at the predefined hour for current month (see array definition)
-    if it stayed off the past 4 hours*/
-    if ( (current_timer_hour == pump_start_hour_for[current_month]) && 
-         (!CPump2) && (SCPump2 > (6*60*4)) ) wantP2on = 1;
-    if (cfg.pump1_always_on) {
-        wantP1on = 1;
-    }
-    else {
-        /* Turn furnace pump on every 4 days */
-        if ( (!CPump1) && (SCPump1 > (6*60*24*4)) ) wantP1on = 1;
-    }
     /* Prevent ETC from boiling its work fluid away in case all heat targets have been reached
         and yet there is no use because for example the users are away on vacation */
     if (Tkolektor > 65) {
@@ -1349,51 +1302,173 @@ ComputeWantedState() {
         /* And if valve has been open for 2 minutes - turn solar pump on */
         if (CValve && (SCValve > 11)) wantP2on = 1;
     }
+
+    /* FURNACE PUMP OPERATION */
+	/* Furnace is above 38 C - at these temps always run the pump */
+	if (Tkotel > 38) { wantP1on = 1; }
+	else {
+		/* below 38 C - check if it is cold to see if we need to run furnace pump:
+            if so - run furnace pump at least once every 10 minutes
+            we check if it is cold by looking at solar pump idle state - in the cold (-10C)
+            it runs at least once per 2 hours; so double that ;) */
+		if ((Tenv < 8)&&(SCPump2 < (6*60*4))&&(!CPump1)&&(SCPump1 > (6*10))) wantP1on = 1;
+	}
+    /* Furnace is above 20 C and rising slowly - turn pump on */
+    if ((Tkotel > 20)&&(Tkotel > (TkotelPrev+0.12))) wantP1on = 1;
+    /* Furnace temp is rising QUICKLY - turn pump on to limit furnace thermal shock */
+    if (Tkotel > (TkotelPrev+0.18)) wantP1on = 1;
+
+    /* BOILER HEATING: ALTERNATIVE SOURCES */
+    /* Do the next checks for boiler heating if boiler is allowed to take heat in */
+    if ( (TboilerHigh < (float)cfg.abs_max) || (TboilerLow < (float)(cfg.abs_max - 2)) ) {
+        /* ETCs have heat in excess - build up boiler temp so expensive sources stay idle */
+        /* Require selected heat source to be near boiler hot end to avoid loosing heat
+        to the enviroment because of the system working */
+        if ((Tkolektor > (TboilerLow+12))&&(Tkolektor > (TboilerHigh-2))) wantP2on = 1;
+        /* Keep solar pump on while solar fluid is more than 5 C hotter than boiler lower end */
+        if ((CPump2) && (Tkolektor > (TboilerLow+4))) wantP2on = 1;
+        /* Furnace has heat in excess - open the valve so boiler can build up heat while it can */
+        if ((Tkotel > (TboilerHigh+3)) || (Tkotel > (TboilerLow+9)))  {
+            wantVon = 1;
+            /* And if valve has been open for 90 seconds - turn furnace pump on */
+            if (CValve && (SCValve > 8)) wantP1on = 1;
+        }
+        /* Keep valve open while there is still heat to exploit */
+        if ((CValve) && (Tkotel > (TboilerLow+4))) wantVon = 1;
+    }
+
+    /* EVACUATED TUBES COLLECTOR: HOUSE KEEPING */
+    /* Run solar pump once every day at the predefined hour for current month (see array definition)
+    if it stayed off the past 4 hours*/
+    if ( (current_timer_hour == pump_start_hour_for[current_month]) && (!CPump2) && (SCPump2 > (6*60*4)) )  {
+        wantP2on = 1;
+    }
+        
+    /* FURNACE PUMP: HOUSE KEEPING */
+    if (cfg.pump1_always_on) {
+        wantP1on = 1;
+    }  else {
+        /* Turn furnace pump on every 4 days */
+        if ( (!CPump1) && (SCPump1 > (6*60*24*4)) ) wantP1on = 1;
+    }
+
+    /* ELECTRICAL HEATER: SMART FUNCTIONS */
     /* Two energy saving functions follow (if activated): */
     /* 1) During night tariff hours, try to keep boiler lower end near wanted temp */
     if ( (current_timer_hour <= NEstop) || (current_timer_hour >= NEstart) ) {
-        if ( (!CPump2) && (TboilerLow < ((float)cfg.wanted_T - 1.1)) ) { wantHon = 1; }
+        if ( (TboilerLow < ((float)cfg.wanted_T - 1.1)) && CanTurnHeaterOn() ) { wantHon = 1; }
     }
     /* 2) In the last 2 hours of night energy tariff heat up boiler until the lower sensor
     reads 12 C on top of desired temp, clamped at cfg.abs_max, so that less day energy gets used */
     if ( (cfg.night_boost) && (current_timer_hour >= (NEstop-1)) && (current_timer_hour <= NEstop) ) {
-        if (TboilerLow < nightEnergyTemp) { wantHon = 1; }
+        if ((TboilerLow < nightEnergyTemp) && CanTurnHeaterOn()) { wantHon = 1; }
+    }
+
+    /* ELECTRICAL HEATER: BULK HEATING */
+    if ( BoilerNeedsHeat() || wantHon ) {
+        /* mark that we want the electrical heater on for deciding a bit downwards */
+        mid_buf = 1;
+        wantHon = 0;
+//        if ( CanTurnHeaterOn() ) wantHon = 1;
     }
 
     /* Decide wheter to request heet pump heat or not */
-    if (Tkotel < furnace_water_target) {
+    if (Tkotel < furnace_water_target)  mid_buf += 2;
+    /* mid_buf holds our desired ON things - lets figure out what can be done in reality */
+    if (mid_buf) {
         switch (cfg.max_big_consumers) {
         default:
         case 1: /* if only 1 big consumer allowed - check if boiler heater is needed */
-            if ( (CanTurnHeatPumpLowOn() ) { ModeSelected |= 32; }
+            if (mid_buff == 1) { /* only boiler needs electrical heater */
+                /* check if other big consumers have been off at least 1 cycle */
+                if ((!CCommsPin1 && (SCCommsPin1)) && (!CCommsPin2 && (SCCommsPin2))) {
+                    /* and if we can turn heater ON */
+                    if (CanTurnHeaterOn()) wantHon = 1;
+                }
+            }
+            if (mid_buff == 2) { /* we would like to use heat pump services */
+                /* check if other big consumers have been off at least 1 cycle */
+                if ((!CHeater && (SCHeater)) && (!CCommsPin2 && (SCCommsPin2))) {
+                    /* and if we can turn heater ON */
+                    if ( (CanTurnHeatPumpLowOn() ) { StateDesired |= 32; }
+                }
+            }
+            /* mid_buff == 3   => does not work - not enough power budget left */
         break;
-        case 2: /* if 2 big consumers allowed - decide on LOW or HIGH heat pump mode */
-            ModeSelected |= 32;
-            if ( (CanTurnHeatPumpHighOn() ) { ModeSelected |= 64; }
+        case 2: /* 2 BIG CONSUMERS*/
+            if (mid_buff == 1) { /* only boiler needs electrical heater */
+                /* check if HP HIGH has been off and HP LOW - settled */
+                if ( (SCCommsPin1) && (!CCommsPin2 && (SCCommsPin2))) {
+                    /* and if we can turn heater ON */
+                    if (CanTurnHeaterOn()) wantHon = 1;
+                }
+            }
+            if (mid_buff == 2) { /* we would like to use heat pump services */
+                /* check if HP HIGH has been OFF and heater - settled */
+                if ((SCHeater) && (!CCommsPin2 && (SCCommsPin2))) {
+                     /* verify rules following */
+                     if ( (CanTurnHeatPumpLowOn() ) { StateDesired |= 32; }
+                     if ( (CanTurnHeatPumpHighOn() ) { StateDesired |= 64; }
+                 }
+            }
+            if (mid_buff == 3) { /* we would like to use BOTH heat pump and heater */
+                /* give boiler priority if possible - HP LOW HP HIGH needs to be off settled and HP HIGH - off */
+                if ((SCCommsPin1>2) && (!CCommsPin2 && (SCCommsPin2))) {
+                    /* verify rules following */
+                    if (CanTurnHeaterOn()) wantHon = 1;
+                }
+                /* for HP LOW - we can keep it on as long as it follows its rules */
+                if ( (CanTurnHeatPumpLowOn() ) { StateDesired |= 32; }
+                /* for HP HIGH - boiler should not be needed and others should have settled */
+                if (!wantHon && (SCCommsPin1>2) && (!CCommsPin2 && (SCCommsPin2))) {
+                    /* check if turning HP high follows its rules */
+                    if ( (CanTurnHeatPumpHighOn() ) { StateDesired |= 64; }
+                }
+            }
         break;
         case 3: /* 3 big consumers allowed - you got thick cables, so we do not care what we turn on */
-            ModeSelected |= 32 + 64;
+            if (mid_buff == 1) { /* only boiler needs electrical heater */
+                /* avoid simultaneous switching */
+                if ((SCCommsPin1) && (SCCommsPin2>2)) {
+                    /* verify rules following */
+                    if (CanTurnHeaterOn()) wantHon = 1;
+                }
+            }
+            if (mid_buff == 2) { /* we would like to use heat pump services */
+                /* avoid simultaneous switching */
+                if ( SCHeater && SCCommsPin1 && (SCCommsPin2>3)) {
+                    /* verify rules following */
+                     if ( (CanTurnHeatPumpLowOn() ) { StateDesired |= 32; }
+                     if ( (CanTurnHeatPumpHighOn() ) { StateDesired |= 64; }
+                 }
+            }
+            if (mid_buff == 3) { /* we would like to use BOTH heat pump and heater */
+                /* avoid simultaneous switching */
+                if ((SCCommsPin1) && (SCCommsPin2>2)) {
+                    /* verify rules following */
+                    if (CanTurnHeaterOn()) wantHon = 1;
+                }
+                /* avoid simultaneous switching */
+                if ( SCHeater && SCCommsPin1 && (SCCommsPin2>3)) {
+                    /* verify rules following */
+                     if ( (CanTurnHeatPumpLowOn() ) { StateDesired |= 32; }
+                     if ( (CanTurnHeatPumpHighOn() ) { StateDesired |= 64; }
+                 }
+                }
+            }
         break;
         }
         /* after the swtich above - request pump 1 only if needed */
-        if ( (ModeSelected & 32) ) wantP1on = 1;
+        if ( (StateDesired & 32) ) wantP1on = 1;
     }
 
-    if ( wantP1on ) ModeSelected |= 1;
-    if ( wantP2on ) ModeSelected |= 2;
-    if ( wantVon )  ModeSelected |= 4;
-    if ( wantHon )  ModeSelected |= 8;
-    if ( CPowerByBattery )  ModeSelected |= 128;
+    if ( wantP1on ) StateDesired |= 1;
+    if ( wantP2on ) StateDesired |= 2;
+    if ( wantVon )  StateDesired |= 4;
+    if ( wantHon )  StateDesired |= 8;
+    if ( CPowerByBattery )  StateDesired |= 128;
 
-    return ModeSelected;
-}
-
-
-    if ( wantP1on ) ModeSelected |= 1;
-    if ( wantP2on ) ModeSelected |= 2;
-    if ( wantVon )  ModeSelected |= 4;
-    if ( wantHon )  ModeSelected |= 8;
-    return ModeSelected;
+    return StateDesired;
 }
 
 unsigned short ValveIsFullyOpen() {
