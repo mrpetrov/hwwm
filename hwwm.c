@@ -1397,6 +1397,7 @@ ComputeWantedState() {
     short wantVon = 0;
     short wantHon = 0;
     short mid_buf = 0;
+    static char data[280];
 
     /* EVACUATED TUBES COLLECTOR: EXTREMES PROTECTIONS */
     /* If collector is below 7 C and its getting cold -	turn pump on to prevent freezing */
@@ -1481,29 +1482,37 @@ ComputeWantedState() {
 
     /* Decide wheter to request heet pump heat or not */
     if (Tkotel < furnace_water_target)  mid_buf += 2;
+    sprintf( data, "compute: mb=%d", mid_buf );
     /* mid_buf holds our desired ON things - lets figure out what can be done in reality */
     if (mid_buf) {
         switch (cfg.max_big_consumers) {
         default:
         case 1: /* if only 1 big consumer allowed - check if boiler heater is needed */
             if (mid_buf == 1) { /* only boiler needs electrical heater */
+                sprintf( data + strlen(data), " 1-1");
                 /* check if other big consumers have been off at least 1 cycle */
                 if ((!CCommsPin1 && (SCCommsPin1)) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* and if we can turn heater ON */
+                    sprintf( data + strlen(data), " check1");
                     if (CanTurnHeaterOn()) wantHon = 1;
+                    if (wantHon) sprintf( data + strlen(data), " OK!");
                 }
             }
             if (mid_buf == 2) { /* we would like to use heat pump services */
+                sprintf( data + strlen(data), " 1-2");
                 /* check if other big consumers have been off at least 1 cycle */
                 if ((!CHeater && (SCHeater)) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* and if we can turn heater ON */
+                    sprintf( data + strlen(data), " check1");
                     if (CanTurnHeatPumpLowOn()) { StateDesired |= 32; }
+                    if (StateDesired & 32) sprintf( data + strlen(data), " OK!");
                 }
             }
             /* mid_buff == 3   => does not work - not enough power budget left */
         break;
         case 2: /* 2 BIG CONSUMERS*/
             if (mid_buf == 1) { /* only boiler needs electrical heater */
+                sprintf( data + strlen(data), " 2-1");
                 /* check if HP HIGH has been off and HP LOW - settled */
                 if ( (SCCommsPin1) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* and if we can turn heater ON */
@@ -1511,6 +1520,7 @@ ComputeWantedState() {
                 }
             }
             if (mid_buf == 2) { /* we would like to use heat pump services */
+                sprintf( data + strlen(data), " 2-2");
                 /* check if HP HIGH has been OFF and heater - settled */
                 if ((SCHeater) && (!CCommsPin2 && (SCCommsPin2))) {
                      /* verify rules following */
@@ -1519,6 +1529,7 @@ ComputeWantedState() {
                  }
             }
             if (mid_buf == 3) { /* we would like to use BOTH heat pump and heater */
+                sprintf( data + strlen(data), " 2-3");
                 /* give boiler priority if possible - HP LOW HP HIGH needs to be off settled and HP HIGH - off */
                 if ((SCCommsPin1>2) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* verify rules following */
@@ -1535,6 +1546,7 @@ ComputeWantedState() {
         break;
         case 3: /* 3 big consumers allowed - you got thick cables, so we do not care what we turn on */
             if (mid_buf == 1) { /* only boiler needs electrical heater */
+                sprintf( data + strlen(data), " 3-1");
                 /* avoid simultaneous switching */
                 if ((SCCommsPin1) && (SCCommsPin2>2)) {
                     /* verify rules following */
@@ -1542,6 +1554,7 @@ ComputeWantedState() {
                 }
             }
             if (mid_buf == 2) { /* we would like to use heat pump services */
+                sprintf( data + strlen(data), " 3-2");
                 /* avoid simultaneous switching */
                 if ( SCHeater && SCCommsPin1 && (SCCommsPin2>3)) {
                     /* verify rules following */
@@ -1550,6 +1563,7 @@ ComputeWantedState() {
                  }
             }
             if (mid_buf == 3) { /* we would like to use BOTH heat pump and heater */
+                sprintf( data + strlen(data), " 3-3");
                 /* avoid simultaneous switching */
                 if ((SCCommsPin1) && (SCCommsPin2>2)) {
                     /* verify rules following */
@@ -1567,7 +1581,9 @@ ComputeWantedState() {
         /* after the swtich above - request pump 1 only if needed */
         if ( StateDesired & 32 ) wantP1on = 1;
     }
-
+    
+    log_message(DATA_FILE, data);
+    
     if ( wantP1on ) StateDesired |= 1;
     if ( wantP2on ) StateDesired |= 2;
     if ( wantVon )  StateDesired |= 4;
