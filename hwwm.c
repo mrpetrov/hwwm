@@ -1273,16 +1273,16 @@ CriticalTempsFound() {
 }
 
 short
-BoilerHeatingNeeded() {
-    if ( TboilerLow < ((float)cfg.wanted_T - (now_is_winter==1 ? 5:12)) ) return 1;
-    if ( TboilerLow > ((float)cfg.wanted_T) ) return 0;
-    if ( TboilerHigh < ((float)cfg.wanted_T - 1) ) return 1;
-    if ( (TboilerHigh < TboilerHighPrev) && (TboilerHighPrev < (float)cfg.wanted_T) ) return 1;
-    return 0;
+BoilerNeedsHeat() {
+    short ret = 0;
+    if ( (TboilerHigh < TboilerHighPrev) && (TboilerHighPrev < (float)cfg.wanted_T) ) ret=1;
+    if ( TboilerHigh < ((float)cfg.wanted_T - 1) ) ret=2;
+    if ( TboilerLow < ((float)cfg.wanted_T - (now_is_winter==1 ? 5:12)) ) ret=3;
+    return ret;
 }
 
 short
-SelectIdleMode() {
+ComputeWantedState() {
     short ModeSelected = 0;
     short wantP1on = 0;
     short wantP2on = 0;
@@ -1373,11 +1373,11 @@ SelectIdleMode() {
         switch (cfg.max_big_consumers) {
         default:
         case 1: /* if only 1 big consumer allowed - check if boiler heater is needed */
-            if ( (!CHeater) && (SCHeater > 0) && !CCommsPin1 && (SCCommsPin1 > 3)) { ModeSelected |= 32; }
+            if ( (CanTurnHeatPumpLowOn() ) { ModeSelected |= 32; }
         break;
         case 2: /* if 2 big consumers allowed - decide on LOW or HIGH heat pump mode */
             ModeSelected |= 32;
-            if ( (!CHeater) && (SCHeater > 0) && !CCommsPin2 && (SCCommsPin2 > 6)) { ModeSelected |= 64; }
+            if ( (CanTurnHeatPumpHighOn() ) { ModeSelected |= 64; }
         break;
         case 3: /* 3 big consumers allowed - you got thick cables, so we do not care what we turn on */
             ModeSelected |= 32 + 64;
@@ -1406,7 +1406,7 @@ SelectHeatingMode() {
     short activeLoads = 0;
 
     /* First get what the idle routine would do: */
-    ModeSelected = SelectIdleMode();
+    ModeSelected = ComputeWantedState();
 
     /* Then add to it main Select()'s stuff: */
     if ((Tkolektor > (TboilerLow + 10))&&(Tkolektor > Tkotel)) {
@@ -1570,7 +1570,7 @@ void TurnCommsPin4Off()      { CCommsPin4 = 0; SCCommsPin4 = 0; }
 void TurnCommsPin4On()      { CCommsPin4 = 1; SCCommsPin4 = 0; }
 
 void
-ActivateHeatingMode(const short HeatMode) {
+ActivateDevicesState(const short HeatMode) {
     char current_state = 0;
     char new_state = 0;
 
@@ -1646,7 +1646,7 @@ ActivateHeatingMode(const short HeatMode) {
 }
 
 void
-AdjustHeatingModeForBatteryPower(unsigned short HM) {
+AdjustWantedStateForBatteryPower(unsigned short WS) {
     /* Check for power source switch */
     if ( CPowerByBattery != CPowerByBatteryPrev ) {
         /* If we just switched to battery.. */
@@ -1657,12 +1657,13 @@ AdjustHeatingModeForBatteryPower(unsigned short HM) {
             log_message(LOG_FILE,"INFO: Powered by GRID now.");
         }
     }
+    /* in the first 10 minutes of battery power there is a high chance that power will be back;
+    prepare for this by keeping the boiler electrical heater ON and ready to switch it off */
     if ( CPowerByBattery ) {
-        /* When battery powered - electric heater does not work; do not try it */
-        HM &= ~(1 << 4);
-        HM &= ~(1 << 5);
+        /* When battery powered - force electrical heater ON */
+        WS |= 16;
         /* enable quick heater turn off */
-        if (CHeater && (SCHeater < 12)) { SCHeater = 12; }
+        SCHeater = 30;
     }
 }
 
@@ -1673,7 +1674,7 @@ main(int argc, char *argv[])
     unsigned short iter = 30;
     unsigned short iter_P = 0;
     unsigned short AlarmRaised = 0;
-    unsigned short HeatingMode = 0;
+    unsigned short DevicesWantedState = 0;
     struct timeval tvalBefore, tvalAfter;
 
     SetDefaultCfg();
@@ -1748,14 +1749,14 @@ main(int argc, char *argv[])
         switch (cfg.mode) {
             default:
             case 0: /* 0=ALL OFF */
-            HeatingMode = 0;
+            DevicesWantedState = 0;
             break;
             case 1: /* 1=AUTO - tries to reach desired water temp efficiently */
             case 2: /* 2=AUTO+HEAT HOUSE BY SOLAR - mode taken into account by SelectIdle() */
             if ( CriticalTempsFound() ) {
                 /* ActivateEmergencyHeatTransfer(); */
-                /* Set HeatingMode bits for both pumps and valve */
-                HeatingMode = 7;
+                /* Set DevicesWantedState bits for both pumps and valve */
+                DevicesWantedState = 1 + 2 + 4;
                 if ( !AlarmRaised ) {
                     log_message(LOG_FILE,"ALARM: Activating emergency cooling!");
                     AlarmRaised = 1;
@@ -1766,46 +1767,40 @@ main(int argc, char *argv[])
                     log_message(LOG_FILE,"INFO: Critical condition resolved. Running normally.");
                     AlarmRaised = 0;
                 }
-                if (BoilerHeatingNeeded()) {
-                    HeatingMode = SelectHeatingMode();
-                    } else {
-                    /* No heating needed - decide how to idle */
-                    HeatingMode = SelectIdleMode();
-                    HeatingMode |= 256;
-                }
+                DevicesWantedState = ComputeWantedState();
             }
             break;
             case 3: /* 3=MANUAL PUMP1 ONLY - only furnace pump ON */
-            HeatingMode = 1;
+            DevicesWantedState = 1;
             break;
             case 4: /* 4=MANUAL PUMP2 ONLY - only solar pump ON */
-            HeatingMode = 2;
+            DevicesWantedState = 2;
             break;
             case 5: /* 5=MANUAL HEATER ONLY - set THERMOSTAT CORRECTLY!!! */
-            HeatingMode = 16;
+            DevicesWantedState = 16;
             break;
             case 6: /* 6=MANAUL PUMP1+HEATER - furnace pump and heater power ON */
-            HeatingMode = 17;
+            DevicesWantedState = 1 + 16;
             break;
             case 7: /* 7=AUTO ELECTICAL HEATER ONLY - this one obeys start/stop hours */
-            if (BoilerHeatingNeeded()) {
-                HeatingMode = 8;
+            if (BoilerNeedsHeat()) {
+                DevicesWantedState = 8;
                 } else {
-                HeatingMode = 256;
+                DevicesWantedState = 256;
             }
             break;
             case 8: /* 8=AUTO ELECTICAL HEATER ONLY, DOES NOT CARE ABOUT SCHEDULE !!! */
-            if (BoilerHeatingNeeded()) {
-                HeatingMode = 16;
+            if (BoilerNeedsHeat()) {
+                DevicesWantedState = 16;
                 } else {
-                HeatingMode = 256;
+                DevicesWantedState = 256;
             }
             break;
         }
-        AdjustHeatingModeForBatteryPower(HeatingMode);
-        ActivateHeatingMode(HeatingMode);
+        AdjustWantedStateForBatteryPower(DevicesWantedState);
+        ActivateDevicesState(DevicesWantedState);
         /* for the first 3 cycles  = 30 seconds - do not log anything */
-        if ( ProgramRunCycles > 2) { LogData(HeatingMode); }
+        if ( ProgramRunCycles > 2) { LogData(DevicesWantedState); }
         ProgramRunCycles++;
         if ( just_started ) { just_started--; }
         if ( need_to_read_cfg ) {
