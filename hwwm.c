@@ -1366,10 +1366,9 @@ ComputeWantedState() {
 
     /* ELECTRICAL HEATER: BULK HEATING */
     if ( BoilerNeedsHeat() || wantHon ) {
-        /* mark that we want the electrical heater on for deciding a bit downwards */
+        /* mark that we want the electrical heater on for deciding a bit later on */
         mid_buf = 1;
         wantHon = 0;
-//        if ( CanTurnHeaterOn() ) wantHon = 1;
     }
 
     /* Decide wheter to request heet pump heat or not */
