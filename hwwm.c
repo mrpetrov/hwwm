@@ -1465,7 +1465,7 @@ ComputeWantedState() {
     /* Two energy saving functions follow (if activated): */
     /* 1) During night tariff hours, try to keep boiler lower end near wanted temp */
     if ( (current_timer_hour <= NEstop) || (current_timer_hour >= NEstart) ) {
-        if ( (TboilerLow < ((float)cfg.wanted_T - 1.1)) && CanTurnHeaterOn() ) { wantHon = 1; }
+        if ( (TboilerLow < ((float)cfg.wanted_T - 1.1)) ) { wantHon = 1; }
     }
     /* 2) In the last 2 hours of night energy tariff heat up boiler until the lower sensor
     reads 12 C on top of desired temp, clamped at cfg.abs_max, so that less day energy gets used */
@@ -1488,6 +1488,11 @@ ComputeWantedState() {
         switch (cfg.max_big_consumers) {
         default:
         case 1: /* if only 1 big consumer allowed - check if boiler heater is needed */
+            /* mid_buff == 3   => does not work - not enough power budget left */
+            if (mid_buf == 3) {
+                sprintf( data + strlen(data), " 1-3 - turnig into");
+                mid_buf=1;
+            }
             if (mid_buf == 1) { /* only boiler needs electrical heater */
                 sprintf( data + strlen(data), " 1-1");
                 /* check if other big consumers have been off at least 1 cycle */
@@ -1508,7 +1513,6 @@ ComputeWantedState() {
                     if (StateDesired & 32) sprintf( data + strlen(data), " OK!");
                 }
             }
-            /* mid_buff == 3   => does not work - not enough power budget left */
         break;
         case 2: /* 2 BIG CONSUMERS*/
             if (mid_buf == 1) { /* only boiler needs electrical heater */
