@@ -1482,7 +1482,7 @@ ComputeWantedState() {
 
     /* Decide wheter to request heet pump heat or not */
     if (Tkotel < furnace_water_target)  mid_buf += 2;
-    sprintf( data, "compute: mb=%d", mid_buf );
+    sprintf( data, "compute: BoilerNeedsHeat(): %d; mb=%d", BoilerNeedsHeat(), mid_buf );
     /* mid_buf holds our desired ON things - lets figure out what can be done in reality */
     if (mid_buf) {
         switch (cfg.max_big_consumers) {
