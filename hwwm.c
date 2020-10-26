@@ -1456,8 +1456,8 @@ ComputeWantedState() {
     if (cfg.pump1_always_on) {
         wantP1on = 1;
     }  else {
-        /* Turn furnace pump on every 4 days */
-        if ( (!CPump1) && (SCPump1 > (6*60*24*4)) ) wantP1on = 1;
+        /* Turn furnace pump on every 2 hours */
+        if ( (!CPump1) && (SCPump1 > (6*60*2)) ) wantP1on = 1;
     }
 
     /* ELECTRICAL HEATER: SMART FUNCTIONS */
