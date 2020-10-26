@@ -1329,7 +1329,7 @@ unsigned short CanTurnHeaterOff() {
 }
 
 unsigned short CanTurnHeatPumpLowOn() {
-    if (!CCommsPin1 && (SCCommsPin1 > 35) && CPump1 && (SCHeater > 2)) return 1;
+    if (!CCommsPin1 && (SCCommsPin1 > 35) && CPump1 ) return 1;
     else return 0;
 }
 
@@ -1339,7 +1339,7 @@ unsigned short CanTurnHeatPumpLowOff() {
 }
 
 unsigned short CanTurnHeatPumpHighOn() {
-    if (!CCommsPin2 && (SCCommsPin2 > 15) && CPump1 && (SCHeater > 2)) return 1;
+    if (!CCommsPin2 && (SCCommsPin2 > 15) && CPump1 && CCommsPin1) return 1;
     else return 0;
 }
 
