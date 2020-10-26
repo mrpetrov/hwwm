@@ -1383,9 +1383,8 @@ CriticalTempsFound() {
 short
 BoilerNeedsHeat() {
     short ret = 0;
-    if ( (TboilerHigh < TboilerHighPrev) && (TboilerHighPrev < (float)cfg.wanted_T) ) ret=100;
-    if ( TboilerHigh < ((float)cfg.wanted_T - 1) ) ret+=20;
-    if ( TboilerLow < ((float)cfg.wanted_T - (now_is_winter==1 ? 5:12)) ) ret+=3;
+    if ( TboilerHigh < ((float)cfg.wanted_T) ) ret+=1;
+    if ( TboilerLow < ((float)cfg.wanted_T - (now_is_winter==1 ? 4:10)) ) ret+=20;
     return ret;
 }
 
@@ -1482,7 +1481,7 @@ ComputeWantedState() {
 
     /* Decide wheter to request heet pump heat or not */
     if (Tkotel < furnace_water_target)  mid_buf += 2;
-    sprintf( data, "compute: BoilerNeedsHeat(): %d; mb=%d", BoilerNeedsHeat(), mid_buf );
+    sprintf( data, "compute: BoilerNeedsHeat()=%d; mb=%d", BoilerNeedsHeat(), mid_buf );
     /* mid_buf holds our desired ON things - lets figure out what can be done in reality */
     if (mid_buf) {
         switch (cfg.max_big_consumers) {
