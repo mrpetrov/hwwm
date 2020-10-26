@@ -1560,7 +1560,6 @@ ComputeWantedState() {
                      if (CanTurnHeatPumpLowOn()) { StateDesired |= 32; }
                      if (CanTurnHeatPumpHighOn()) { StateDesired |= 64; }
                  }
-                }
             }
         break;
         }
