@@ -323,6 +323,7 @@ SetDefaultPINs() {
     cfg.commspin4_pin = 22;
 }
 
+/* FIXME: a config setting not found in the cfg file is wrongly set to 0 */
 void
 SetDefaultCfg() {
     strcpy( cfg.tkotel_sensor, "/dev/zero/1");
