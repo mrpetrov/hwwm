@@ -212,6 +212,8 @@ struct cfg_struct
     int     abs_max;
     char    max_big_consumers_str[MAXLEN];
     int     max_big_consumers;
+    char    use_acs_str[MAXLEN];
+    int     use_acs;
 }
 cfg_struct;
 
@@ -341,6 +343,7 @@ SetDefaultCfg() {
     cfg.night_boost = 0;
     cfg.abs_max = 63;
     cfg.max_big_consumers = 1;
+    cfg.use_acs = 1;
 
     nightEnergyTemp = 0;
     sensor_paths[0] = (char *) &cfg.tkotel_sensor;
@@ -504,6 +507,8 @@ parse_config()
             strncpy (cfg.abs_max_str, value, MAXLEN);
             else if (strcmp(name, "max_big_consumers")==0)
             strncpy (cfg.max_big_consumers_str, value, MAXLEN);
+            else if (strcmp(name, "use_acs")==0)
+            strncpy (cfg.use_acs_str, value, MAXLEN);
         }
         /* Close file */
         fclose (fp);
@@ -596,12 +601,14 @@ parse_config()
     i = atoi( buff );
     cfg.abs_max = i;
     rangecheck_abs_max_temp( cfg.abs_max );
-
-
     strcpy( buff, cfg.max_big_consumers_str );
     i = atoi( buff );
     cfg.max_big_consumers = i;
     rangecheck_max_big_consumers( cfg.max_big_consumers );
+    strcpy( buff, cfg.use_acs_str );
+    i = atoi( buff );
+    cfg.use_acs = i;
+    /* ^ no need for range check - 0 is OFF, non-zero is ON */
 
 
     /* Prepare log messages with sensor paths and write them to log file */
@@ -645,8 +652,8 @@ parse_config()
     sprintf( buff, "INFO: Furnace pump always on=%d, use furnace pump=%d, use solar pump=%d, reset P counters day=%d", 
                 cfg.pump1_always_on, cfg.use_pump1, cfg.use_pump2, cfg.day_to_reset_Pcounters);
     log_message(LOG_FILE, buff);
-    sprintf( buff, "INFO: Night boiler boost=%d, absMAX=%d, max big consumers=%d", 
-                cfg.night_boost, cfg.abs_max, cfg.max_big_consumers );
+    sprintf( buff, "INFO: Night boiler boost=%d, absMAX=%d, max big consumers=%d, use ACs=%d", 
+                cfg.night_boost, cfg.abs_max, cfg.max_big_consumers, cfg.use_acs );
     log_message(LOG_FILE, buff);
 	
     /* stuff for after parsing config file: */
@@ -1140,10 +1147,10 @@ ReWrite_CFG_TABLE_FILE() {
 	on seperate lines */
     sprintf( data, ",mode,%d\n_,Tboiler_wanted,%d\n_,elh_nt,%d\n_,elh_dt,%d\n"\
     "_,p1_always_on,%d\n_,use_p1,%d\n_,use_p2,%d\n_,Pcounters_rst_day,%d\n"\
-	"_,use_night_boost,%d\n_,Tboiler_absMax,%d",
+	"_,use_night_boost,%d\n_,Tboiler_absMax,%d_,max_big_consumers,%d_,useACs,%d",
     cfg.mode, cfg.wanted_T, cfg.use_electric_heater_night, cfg.use_electric_heater_day,
 	cfg.pump1_always_on, cfg.use_pump1, cfg.use_pump2, cfg.day_to_reset_Pcounters,
-	cfg.night_boost, cfg.abs_max);
+	cfg.night_boost, cfg.abs_max, cfg.max_big_consumers, cfg.use_acs);
     log_msg_ovr(CFG_TABLE_FILE, data);
 }
 
@@ -1480,7 +1487,7 @@ ComputeWantedState() {
     }
 
     /* Decide wheter to request heet pump heat or not */
-    if (Tkotel < furnace_water_target)  mid_buf += 2;
+    if ((Tkotel < furnace_water_target) && cfg.use_acs)  mid_buf += 2;
     sprintf( data, "compute: BoilerNeedsHeat()=%d; mb=%d", BoilerNeedsHeat(), mid_buf );
     /* mid_buf holds our desired ON things - lets figure out what can be done in reality */
     if (mid_buf) {
