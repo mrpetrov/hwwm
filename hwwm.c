@@ -1329,14 +1329,6 @@ ComputeWantedState() {
             if ((CValve) && (Tkotel > (TboilerLow+4))) wantVon = 1;
         }
     }
-    /* Try to heat the house by taking heat from boiler but leave at least 2 C extra on
-    top of the wanted temp - first open the valve, then turn furnace pump on */
-    if ( (cfg.mode==2) && /* 2=AUTO+HEAT HOUSE BY SOLAR; */
-    (TboilerHigh > ((float)cfg.wanted_T + 2)) && (TboilerLow > (Tkotel + 8)) ) {
-        wantVon = 1;
-        /* And if valve has been open for 1 minute - turn furnace pump on */
-        if (CValve && (SCValve > 6)) wantP1on = 1;
-    }
     /* Run solar pump once every day at the predefined hour for current month (see array definition)
     if it stayed off the past 4 hours*/
     if ( (current_timer_hour == pump_start_hour_for[current_month]) && 
@@ -1752,7 +1744,6 @@ main(int argc, char *argv[])
             DevicesWantedState = 0;
             break;
             case 1: /* 1=AUTO - tries to reach desired water temp efficiently */
-            case 2: /* 2=AUTO+HEAT HOUSE BY SOLAR - mode taken into account by SelectIdle() */
             if ( CriticalTempsFound() ) {
                 /* ActivateEmergencyHeatTransfer(); */
                 /* Set DevicesWantedState bits for both pumps and valve */
@@ -1768,32 +1759,6 @@ main(int argc, char *argv[])
                     AlarmRaised = 0;
                 }
                 DevicesWantedState = ComputeWantedState();
-            }
-            break;
-            case 3: /* 3=MANUAL PUMP1 ONLY - only furnace pump ON */
-            DevicesWantedState = 1;
-            break;
-            case 4: /* 4=MANUAL PUMP2 ONLY - only solar pump ON */
-            DevicesWantedState = 2;
-            break;
-            case 5: /* 5=MANUAL HEATER ONLY - set THERMOSTAT CORRECTLY!!! */
-            DevicesWantedState = 16;
-            break;
-            case 6: /* 6=MANAUL PUMP1+HEATER - furnace pump and heater power ON */
-            DevicesWantedState = 1 + 16;
-            break;
-            case 7: /* 7=AUTO ELECTICAL HEATER ONLY - this one obeys start/stop hours */
-            if (BoilerNeedsHeat()) {
-                DevicesWantedState = 8;
-                } else {
-                DevicesWantedState = 256;
-            }
-            break;
-            case 8: /* 8=AUTO ELECTICAL HEATER ONLY, DOES NOT CARE ABOUT SCHEDULE !!! */
-            if (BoilerNeedsHeat()) {
-                DevicesWantedState = 16;
-                } else {
-                DevicesWantedState = 256;
             }
             break;
         }
