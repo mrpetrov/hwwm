@@ -1513,8 +1513,8 @@ ComputeWantedState() {
                 /* check if HP HIGH has been OFF and heater - settled */
                 if ((SCHeater) && (!CCommsPin2 && (SCCommsPin2))) {
                      /* verify rules following */
-                     if ((CanTurnHeatPumpLowOn()) { StateDesired |= 32; }
-                     if ((CanTurnHeatPumpHighOn()) { StateDesired |= 64; }
+                     if (CanTurnHeatPumpLowOn()) { StateDesired |= 32; }
+                     if (CanTurnHeatPumpHighOn()) { StateDesired |= 64; }
                  }
             }
             if (mid_buf == 3) { /* we would like to use BOTH heat pump and heater */
