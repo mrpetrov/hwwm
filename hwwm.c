@@ -1496,7 +1496,7 @@ ComputeWantedState() {
                 /* check if other big consumers have been off at least 1 cycle */
                 if ((!CHeater && (SCHeater)) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* and if we can turn heater ON */
-                    if ( (CanTurnHeatPumpLowOn() ) { StateDesired |= 32; }
+                    if (CanTurnHeatPumpLowOn()) { StateDesired |= 32; }
                 }
             }
             /* mid_buff == 3   => does not work - not enough power budget left */
@@ -1513,8 +1513,8 @@ ComputeWantedState() {
                 /* check if HP HIGH has been OFF and heater - settled */
                 if ((SCHeater) && (!CCommsPin2 && (SCCommsPin2))) {
                      /* verify rules following */
-                     if ( (CanTurnHeatPumpLowOn() ) { StateDesired |= 32; }
-                     if ( (CanTurnHeatPumpHighOn() ) { StateDesired |= 64; }
+                     if ((CanTurnHeatPumpLowOn()) { StateDesired |= 32; }
+                     if ((CanTurnHeatPumpHighOn()) { StateDesired |= 64; }
                  }
             }
             if (mid_buf == 3) { /* we would like to use BOTH heat pump and heater */
@@ -1528,7 +1528,7 @@ ComputeWantedState() {
                 /* for HP HIGH - boiler should not be needed and others should have settled */
                 if (!wantHon && (SCCommsPin1>2) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* check if turning HP high follows its rules */
-                    if ( (CanTurnHeatPumpHighOn() ) { StateDesired |= 64; }
+                    if (CanTurnHeatPumpHighOn()) { StateDesired |= 64; }
                 }
             }
         break;
@@ -1544,8 +1544,8 @@ ComputeWantedState() {
                 /* avoid simultaneous switching */
                 if ( SCHeater && SCCommsPin1 && (SCCommsPin2>3)) {
                     /* verify rules following */
-                     if ( (CanTurnHeatPumpLowOn() ) { StateDesired |= 32; }
-                     if ( (CanTurnHeatPumpHighOn() ) { StateDesired |= 64; }
+                     if (CanTurnHeatPumpLowOn()) { StateDesired |= 32; }
+                     if (CanTurnHeatPumpHighOn()) { StateDesired |= 64; }
                  }
             }
             if (mid_buf == 3) { /* we would like to use BOTH heat pump and heater */
@@ -1557,15 +1557,15 @@ ComputeWantedState() {
                 /* avoid simultaneous switching */
                 if ( SCHeater && SCCommsPin1 && (SCCommsPin2>3)) {
                     /* verify rules following */
-                     if ( (CanTurnHeatPumpLowOn() ) { StateDesired |= 32; }
-                     if ( (CanTurnHeatPumpHighOn() ) { StateDesired |= 64; }
+                     if (CanTurnHeatPumpLowOn()) { StateDesired |= 32; }
+                     if (CanTurnHeatPumpHighOn()) { StateDesired |= 64; }
                  }
                 }
             }
         break;
         }
         /* after the swtich above - request pump 1 only if needed */
-        if ( (StateDesired & 32) ) wantP1on = 1;
+        if ( StateDesired & 32 ) wantP1on = 1;
     }
 
     if ( wantP1on ) StateDesired |= 1;
