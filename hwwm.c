@@ -1486,7 +1486,7 @@ ComputeWantedState() {
     if (mid_buf) {
         switch (cfg.max_big_consumers) {
         default:
-        case 1: /* if only 1 big consumer allowed - check if boiler heater is needed */
+        case 1: /* 1 BIG CONSUMER allowed */
             /* mid_buff == 3   => does not work - not enough power budget left */
             if (mid_buf == 3) {
                 sprintf( data + strlen(data), " 1-3 - turnig into");
@@ -1513,7 +1513,7 @@ ComputeWantedState() {
                 }
             }
         break;
-        case 2: /* 2 BIG CONSUMERS*/
+        case 2: /* 2 BIG CONSUMERS allowed*/
             if (mid_buf == 1) { /* only boiler needs electrical heater */
                 sprintf( data + strlen(data), " 2-1");
                 /* check if HP HIGH has been off and HP LOW - settled */
@@ -1556,7 +1556,7 @@ ComputeWantedState() {
                 }
             }
         break;
-        case 3: /* 3 big consumers allowed - you got thick cables, so we do not care what we turn on */
+        case 3: /* 3 BIG CONSUMERS allowed*/
             if (mid_buf == 1) { /* only boiler needs electrical heater */
                 sprintf( data + strlen(data), " 3-1");
                 /* avoid simultaneous switching */
