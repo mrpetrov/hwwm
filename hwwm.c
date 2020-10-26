@@ -278,7 +278,7 @@ void
 rangecheck_mode( int m )
 {
     if (m < 0) m = 0;
-    if (m > 8) m = 0;
+    if (m > 1) m = 0;
 }
 
 void
