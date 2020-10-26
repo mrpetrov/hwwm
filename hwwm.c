@@ -1463,38 +1463,102 @@ SelectHeatingMode() {
     return ModeSelected;
 }
 
-void TurnPump1Off()  { if (CPump1 && !CValve && !CCommsPin1 && (SCPump1 > 5) && (SCValve > 5))
-{ CPump1 = 0; SCPump1 = 0; } }
-void TurnPump1On()   { if (cfg.use_pump1 && (!CPump1) && (SCPump1 > 2)) { CPump1 = 1; SCPump1 = 0; } }
-void TurnPump2Off()  { if (CPump2 && (SCPump2 > 5)) { CPump2  = 0; SCPump2 = 0; } }
-void TurnPump2On()   { if (cfg.use_pump2 && (!CPump2) && (SCPump2 > 2)) { CPump2  = 1; SCPump2 = 0; } }
-void TurnValveOff()  { if (CValve && (SCValve > 17)) { CValve  = 0; SCValve = 0; } }
-void TurnValveOn()   { if (!CValve && (SCValve > 5)) { CValve  = 1; SCValve = 0; } }
-void TurnHeaterOff() { if (CHeater && (SCHeater > 59)) { CHeater = 0; SCHeater = 0; } }
-void TurnHeaterOn()  { if ((!CHeater) && (SCHeater > 29)) { CHeater = 1; SCHeater = 0; } }
-void TurnHeatPumpLowOff()  { if (CCommsPin1 && (SCCommsPin1 > 59)) { CCommsPin1 = 0; SCCommsPin1 = 0; } }
-void TurnHeatPumpLowOn()  { if (!CCommsPin1 && (SCCommsPin1 > 35) && CPump1 && (SCHeater > 2)) { CCommsPin1 = 1; SCCommsPin1 = 0; } }
-void TurnHeatPumpHighOff()  { if (CCommsPin2 && (SCCommsPin2 > 59)) { CCommsPin2 = 0; SCCommsPin2 = 0; } }
-void TurnHeatPumpHighOn()  { if (!CCommsPin2 && (SCCommsPin2 > 15) && CPump1 && (SCHeater > 2)) { CCommsPin2 = 1; SCCommsPin2 = 0; } }
-void TurnCommsPin4Off()  { if (CCommsPin4 && (SCCommsPin4 > 17)) { CCommsPin4 = 0; SCCommsPin4 = 0; } }
-void TurnCommsPin4On()  { CCommsPin4 = 1; SCCommsPin4 = 0; }
+unsigned short CanTurnPump1On() {
+    if (cfg.use_pump1 && (!CPump1) && (SCPump1 > 2)) return 1;
+    else return 0;
+}
 
-void
-TryElecitricHeaterOn() {
+unsigned short CanTurnPump1Off() {
+    if (CPump1 && !CValve && !CCommsPin1 && (SCPump1 > 5) && (SCValve > 5)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnPump2On() {
+    if (cfg.use_pump2 && (!CPump2) && (SCPump2 > 2)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnPump2Off() {
+    if (CPump2 && (SCPump2 > 5)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnValveOn() {
+    if (!CValve && (SCValve > 5)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnValveOff() {
+    if (CValve && (SCValve > 17)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnHeaterOn() {
+    unsigned short i = 0;
     /* Do the check with config to see if its OK to use electric heater,
     for example: if its on "night tariff" - switch it on */
     /* Determine current time: */
+    if (CHeater && (SCHeater > 59)) { i=1; }
     if ( (current_timer_hour <= NEstop) || (current_timer_hour >= NEstart) ) {
             /* NIGHT TARIFF TIME */
             /* If heater use is allowed by config - turn it on */
-            if (cfg.use_electric_heater_night) TurnHeaterOn();
+            if (cfg.use_electric_heater_night) return i;
     }
     else {
             /* DAY TIME */
             /* If heater use is allowed by config - turn it on */
-            if (cfg.use_electric_heater_day) TurnHeaterOn();
+            if (cfg.use_electric_heater_day) return i;
     }
 }
+
+unsigned short CanTurnHeaterOff() {
+    if ((!CHeater) && (SCHeater > 29)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnHeatPumpLowOn() {
+    if (!CCommsPin1 && (SCCommsPin1 > 35) && CPump1 && (SCHeater > 2)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnHeatPumpLowOff() {
+    if (CCommsPin1 && (SCCommsPin1 > 59))  return 1;
+    else return 0;
+}
+
+unsigned short CanTurnHeatPumpHighOn() {
+    if (!CCommsPin2 && (SCCommsPin2 > 15) && CPump1 && (SCHeater > 2)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnHeatPumpHighOff() {
+    if (CCommsPin2 && (SCCommsPin2 > 59))  return 1;
+    else return 0;
+}
+
+unsigned short CanTurnCommsPin4On() {
+    return 1;
+}
+
+unsigned short CanTurnCommsPin4Off() {
+    if (CCommsPin4 && (SCCommsPin4 > 17)) return 1;
+    else return 0;
+}
+
+void TurnPump1Off()  { CPump1 = 0; SCPump1 = 0; }
+void TurnPump1On()  { CPump1 = 1; SCPump1 = 0; }
+void TurnPump2Off()  { CPump2  = 0; SCPump2 = 0; }
+void TurnPump2On()  { CPump2  = 1; SCPump2 = 0; }
+void TurnValveOff()    { CValve  = 0; SCValve = 0; }
+void TurnValveOn()    { CValve  = 1; SCValve = 0; }
+void TurnHeaterOff()  { CHeater = 0; SCHeater = 0; }
+void TurnHeaterOn()  { CHeater = 1; SCHeater = 0; }
+void TurnHeatPumpLowOff()  { CCommsPin1 = 0; SCCommsPin1 = 0; }
+void TurnHeatPumpLowOn()  { CCommsPin1 = 1; SCCommsPin1 = 0; }
+void TurnHeatPumpHighOff() { CCommsPin2 = 0; SCCommsPin2 = 0; }
+void TurnHeatPumpHighOn() { CCommsPin2 = 1; SCCommsPin2 = 0; }
+void TurnCommsPin4Off()      { CCommsPin4 = 0; SCCommsPin4 = 0; } 
+void TurnCommsPin4On()      { CCommsPin4 = 1; SCCommsPin4 = 0; }
 
 void
 ActivateHeatingMode(const short HeatMode) {
@@ -1518,15 +1582,15 @@ ActivateHeatingMode(const short HeatMode) {
         bit 5 (16) - heater forced
         bit 6 (32) - want heat pump LOW on
         bit 7 (64) - want heat pump HIGH on */
-    if (HeatMode & 1)  { TurnPump1On(); } else { TurnPump1Off(); }
-    if (HeatMode & 2)  { TurnPump2On(); } else { TurnPump2Off(); }
-    if (HeatMode & 4)  { TurnValveOn(); } else { TurnValveOff(); }
-    if (HeatMode & 8)  { TryElecitricHeaterOn(); }
-    if (HeatMode & 16) { TurnHeaterOn(); }
-    if ( !(HeatMode & 24) ) { TurnHeaterOff(); }
-    if (HeatMode & 32)  { TurnHeatPumpLowOn(); } else { TurnHeatPumpLowOff(); }
-    if (HeatMode & 64)  { TurnHeatPumpHighOn(); } else { TurnHeatPumpHighOff(); }
-    if (HeatMode & 128)  { TurnCommsPin4On(); } else { TurnCommsPin4Off(); }
+    if (HeatMode &   1)  { if (CanTurnPump1On()) TurnPump1On(); } else { if (CanTurnPump1Off()) TurnPump1Off(); }
+    if (HeatMode &   2)  { if (CanTurnPump2On()) TurnPump2On(); } else { if (CanTurnPump2Off()) TurnPump2Off(); }
+    if (HeatMode &   4)  {  if (CanTurnValveOn()) TurnValveOn(); } else {  if (CanTurnValveOff()) TurnValveOff(); }
+    if (HeatMode &   8)  {  if (CanTurnHeaterOn()) TurnHeaterOn(); }
+    if (HeatMode &  16) { TurnHeaterOn(); }
+    if ( !(HeatMode & 24) ) { if (CanTurnHeaterOff()) TurnHeaterOff(); }
+    if (HeatMode &  32)  { if (CanTurnHeatPumpLowOn()) TurnHeatPumpLowOn(); } else { if (CanTurnHeatPumpLowOff()) TurnHeatPumpLowOff(); }
+    if (HeatMode &  64)  { if (CanTurnHeatPumpHighOn()) TurnHeatPumpHighOn(); } else { if (CanTurnHeatPumpHighOff()) TurnHeatPumpHighOff(); }
+    if (HeatMode & 128) { if (CanTurnCommsPin4On()) TurnCommsPin4On(); } else { if (CanTurnCommsPin4Off()) TurnCommsPin4Off(); }
     
     SCPump1++;
     SCPump2++;
