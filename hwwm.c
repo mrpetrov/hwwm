@@ -1419,41 +1419,40 @@ SelectHeatingMode() {
             /* The furnace is hot enough - use it */
             wantVon = 1;
             /* And if valve has been open for 2 minutes - turn furnace pump on */
-            if (CValve &&(SCValve > 13)) wantP1on = 1;
+            if (ValveIsFullyOpen()) wantP1on = 1;
         }
         else {
             /* All is cold - use electric heater if possible */
             /* Only turn heater on if valve is fully closed, because it runs with at least one pump
                and make sure ETC pump is NOT running...*/
-            if ((!CValve && (SCValve > 15))&&(!CPump2)) wantHon = 1;
+            if ((ValveIsFullyClosed())&&(!CPump2)) {
+                wantHon = 1;
+                /* if electrical heater is needed - decide if it can be turned on*/
+                activeLoads++; // for wantHon - we need to take into account
+                /* start by counting what we would want to be turned on */
+                if ( ModeSelected & 32 ) activeLoads++;
+                if ( ModeSelected & 64 ) activeLoads++;
+                /* if we are too heavy - try to shed some wheight off*/
+                if ( activeLoads >= cfg.max_big_consumers ) {
+                     /* check if heat pump HIGH can be switched off */
+                     if ( (ModeSelected & 64) && CanTurnHeatPumpHighOff() ) {
+                            ModeSelected -= 64;
+                            activeLoads--;
+                        }
+                     if ( activeLoads >= cfg.max_big_consumers ) {
+                         /* if still need to shed load - check if heat pump LOW can be switched off */
+                         if ( (ModeSelected & 32) && CanTurnHeatPumpLowOff() ) {
+                                ModeSelected -= 32;
+                                activeLoads--;
+                            }
+                     }
+                }
+                /* in the end - if we got no room for electrical heater - it must stay OFF */
+                if (activeLoads > cfg.max_big_consumers) { 
+                    wantHon = 0;
+                }
+            }
         }
-    }
-
-    /* if electrical heater is needed - decide if it can be turned on*/
-    if ( wantHon ) activeLoads++; // for wantHon - we need to take into account
-    /* start by counting what we would want to be turned on */
-    if ( ModeSelected & 32 ) activeLoads++;
-    if ( ModeSelected & 64 ) activeLoads++;
-    /* if we are too heavy - try to shed some wheight off*/
-    if ( activeLoads >= cfg.max_big_consumers ) {
-         /* check if heat pump HIGH can be switched off */
-         if ( ModeSelected & 64 ) {
-            if (CCommsPin2 && (SCCommsPin2 > 59))  {
-                ModeSelected -= 64;
-                activeLoads--;
-            } }
-         if ( activeLoads >= cfg.max_big_consumers ) {
-             /* if still need to shed load - check if heat pump LOW can be switched off */
-         if ( ModeSelected & 32 ) {
-             if (CCommsPin1 && (SCCommsPin1 > 59)) {
-                    ModeSelected -= 32;
-                    activeLoads--;
-             } }
-         }
-    }
-    /* in the end - if we got no room for electrical heater - it must stay OFF */
-    if (activeLoads > cfg.max_big_consumers) { 
-        wantHon = 0;
     }
 
     if ( wantP1on ) ModeSelected |= 1;
@@ -1461,6 +1460,16 @@ SelectHeatingMode() {
     if ( wantVon )  ModeSelected |= 4;
     if ( wantHon )  ModeSelected |= 8;
     return ModeSelected;
+}
+
+unsigned short ValveIsFullyOpen() {
+    if (CValve && (SCValve > 13)) return 1;
+    else return 0;
+}
+
+unsigned short ValveIsFullyClosed() {
+    if (!CValve && (SCValve > 15)) return 1;
+    else return 0;
 }
 
 unsigned short CanTurnPump1On() {
