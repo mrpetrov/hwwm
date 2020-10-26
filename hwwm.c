@@ -1383,9 +1383,9 @@ CriticalTempsFound() {
 short
 BoilerNeedsHeat() {
     short ret = 0;
-    if ( (TboilerHigh < TboilerHighPrev) && (TboilerHighPrev < (float)cfg.wanted_T) ) ret=1;
-    if ( TboilerHigh < ((float)cfg.wanted_T - 1) ) ret=2;
-    if ( TboilerLow < ((float)cfg.wanted_T - (now_is_winter==1 ? 5:12)) ) ret=3;
+    if ( (TboilerHigh < TboilerHighPrev) && (TboilerHighPrev < (float)cfg.wanted_T) ) ret=100;
+    if ( TboilerHigh < ((float)cfg.wanted_T - 1) ) ret+=20;
+    if ( TboilerLow < ((float)cfg.wanted_T - (now_is_winter==1 ? 5:12)) ) ret+=3;
     return ret;
 }
 
