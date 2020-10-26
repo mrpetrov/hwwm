@@ -319,7 +319,6 @@ SetDefaultPINs() {
     cfg.commspin2_pin = 18;
     cfg.commspin3_pin = 27;
     cfg.commspin4_pin = 22;
-    cfg.max_big_consumers = 1;
 }
 
 void
@@ -341,6 +340,7 @@ SetDefaultCfg() {
     cfg.day_to_reset_Pcounters = 4;
     cfg.night_boost = 0;
     cfg.abs_max = 63;
+    cfg.max_big_consumers = 1;
 
     nightEnergyTemp = 0;
     sensor_paths[0] = (char *) &cfg.tkotel_sensor;
