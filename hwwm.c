@@ -1264,6 +1264,113 @@ LogData(short HM) {
     log_msg_cln(JSON_FILE, data);
 }
 
+unsigned short ValveIsFullyOpen() {
+    if (CValve && (SCValve > 13)) return 1;
+    else return 0;
+}
+
+unsigned short ValveIsFullyClosed() {
+    if (!CValve && (SCValve > 15)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnPump1On() {
+    if (cfg.use_pump1 && (!CPump1) && (SCPump1 > 2)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnPump1Off() {
+    if (CPump1 && !CValve && !CCommsPin1 && (SCPump1 > 5) && (SCValve > 5)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnPump2On() {
+    if (cfg.use_pump2 && (!CPump2) && (SCPump2 > 2)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnPump2Off() {
+    if (CPump2 && (SCPump2 > 5)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnValveOn() {
+    if (!CValve && (SCValve > 5)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnValveOff() {
+    if (CValve && (SCValve > 17)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnHeaterOn() {
+    unsigned short i = 0;
+    /* Do the check with config to see if its OK to use electric heater,
+    for example: if its on "night tariff" - switch it on */
+    /* Determine current time: */
+    if (!CHeater && (SCHeater > 29)) { i=1; }
+    if ( (current_timer_hour <= NEstop) || (current_timer_hour >= NEstart) ) {
+            /* NIGHT TARIFF TIME */
+            /* If heater use is allowed by config - turn it on */
+            if (cfg.use_electric_heater_night) return i;
+    }
+    else {
+            /* DAY TIME */
+            /* If heater use is allowed by config - turn it on */
+            if (cfg.use_electric_heater_day) return i;
+    }
+}
+
+unsigned short CanTurnHeaterOff() {
+    if ((CHeater) && (SCHeater > 59)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnHeatPumpLowOn() {
+    if (!CCommsPin1 && (SCCommsPin1 > 35) && CPump1 && (SCHeater > 2)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnHeatPumpLowOff() {
+    if (CCommsPin1 && (SCCommsPin1 > 59))  return 1;
+    else return 0;
+}
+
+unsigned short CanTurnHeatPumpHighOn() {
+    if (!CCommsPin2 && (SCCommsPin2 > 15) && CPump1 && (SCHeater > 2)) return 1;
+    else return 0;
+}
+
+unsigned short CanTurnHeatPumpHighOff() {
+    if (CCommsPin2 && (SCCommsPin2 > 59))  return 1;
+    else return 0;
+}
+
+unsigned short CanTurnCommsPin4On() {
+    return 1;
+}
+
+unsigned short CanTurnCommsPin4Off() {
+    if (CCommsPin4 && (SCCommsPin4 > 17)) return 1;
+    else return 0;
+}
+
+void TurnPump1Off()  { CPump1 = 0; SCPump1 = 0; }
+void TurnPump1On()  { CPump1 = 1; SCPump1 = 0; }
+void TurnPump2Off()  { CPump2  = 0; SCPump2 = 0; }
+void TurnPump2On()  { CPump2  = 1; SCPump2 = 0; }
+void TurnValveOff()    { CValve  = 0; SCValve = 0; }
+void TurnValveOn()    { CValve  = 1; SCValve = 0; }
+void TurnHeaterOff()  { CHeater = 0; SCHeater = 0; }
+void TurnHeaterOn()  { CHeater = 1; SCHeater = 0; }
+void TurnHeatPumpLowOff()  { CCommsPin1 = 0; SCCommsPin1 = 0; }
+void TurnHeatPumpLowOn()  { CCommsPin1 = 1; SCCommsPin1 = 0; }
+void TurnHeatPumpHighOff() { CCommsPin2 = 0; SCCommsPin2 = 0; }
+void TurnHeatPumpHighOn() { CCommsPin2 = 1; SCCommsPin2 = 0; }
+void TurnCommsPin4Off()      { CCommsPin4 = 0; SCCommsPin4 = 0; } 
+void TurnCommsPin4On()      { CCommsPin4 = 1; SCCommsPin4 = 0; }
+
 /* Return non-zero value on critical condition found based on current data in sensors[] */
 short
 CriticalTempsFound() {
@@ -1378,14 +1485,14 @@ ComputeWantedState() {
         switch (cfg.max_big_consumers) {
         default:
         case 1: /* if only 1 big consumer allowed - check if boiler heater is needed */
-            if (mid_buff == 1) { /* only boiler needs electrical heater */
+            if (mid_buf == 1) { /* only boiler needs electrical heater */
                 /* check if other big consumers have been off at least 1 cycle */
                 if ((!CCommsPin1 && (SCCommsPin1)) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* and if we can turn heater ON */
                     if (CanTurnHeaterOn()) wantHon = 1;
                 }
             }
-            if (mid_buff == 2) { /* we would like to use heat pump services */
+            if (mid_buf == 2) { /* we would like to use heat pump services */
                 /* check if other big consumers have been off at least 1 cycle */
                 if ((!CHeater && (SCHeater)) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* and if we can turn heater ON */
@@ -1395,14 +1502,14 @@ ComputeWantedState() {
             /* mid_buff == 3   => does not work - not enough power budget left */
         break;
         case 2: /* 2 BIG CONSUMERS*/
-            if (mid_buff == 1) { /* only boiler needs electrical heater */
+            if (mid_buf == 1) { /* only boiler needs electrical heater */
                 /* check if HP HIGH has been off and HP LOW - settled */
                 if ( (SCCommsPin1) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* and if we can turn heater ON */
                     if (CanTurnHeaterOn()) wantHon = 1;
                 }
             }
-            if (mid_buff == 2) { /* we would like to use heat pump services */
+            if (mid_buf == 2) { /* we would like to use heat pump services */
                 /* check if HP HIGH has been OFF and heater - settled */
                 if ((SCHeater) && (!CCommsPin2 && (SCCommsPin2))) {
                      /* verify rules following */
@@ -1410,7 +1517,7 @@ ComputeWantedState() {
                      if ( (CanTurnHeatPumpHighOn() ) { StateDesired |= 64; }
                  }
             }
-            if (mid_buff == 3) { /* we would like to use BOTH heat pump and heater */
+            if (mid_buf == 3) { /* we would like to use BOTH heat pump and heater */
                 /* give boiler priority if possible - HP LOW HP HIGH needs to be off settled and HP HIGH - off */
                 if ((SCCommsPin1>2) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* verify rules following */
@@ -1426,14 +1533,14 @@ ComputeWantedState() {
             }
         break;
         case 3: /* 3 big consumers allowed - you got thick cables, so we do not care what we turn on */
-            if (mid_buff == 1) { /* only boiler needs electrical heater */
+            if (mid_buf == 1) { /* only boiler needs electrical heater */
                 /* avoid simultaneous switching */
                 if ((SCCommsPin1) && (SCCommsPin2>2)) {
                     /* verify rules following */
                     if (CanTurnHeaterOn()) wantHon = 1;
                 }
             }
-            if (mid_buff == 2) { /* we would like to use heat pump services */
+            if (mid_buf == 2) { /* we would like to use heat pump services */
                 /* avoid simultaneous switching */
                 if ( SCHeater && SCCommsPin1 && (SCCommsPin2>3)) {
                     /* verify rules following */
@@ -1441,7 +1548,7 @@ ComputeWantedState() {
                      if ( (CanTurnHeatPumpHighOn() ) { StateDesired |= 64; }
                  }
             }
-            if (mid_buff == 3) { /* we would like to use BOTH heat pump and heater */
+            if (mid_buf == 3) { /* we would like to use BOTH heat pump and heater */
                 /* avoid simultaneous switching */
                 if ((SCCommsPin1) && (SCCommsPin2>2)) {
                     /* verify rules following */
@@ -1469,113 +1576,6 @@ ComputeWantedState() {
 
     return StateDesired;
 }
-
-unsigned short ValveIsFullyOpen() {
-    if (CValve && (SCValve > 13)) return 1;
-    else return 0;
-}
-
-unsigned short ValveIsFullyClosed() {
-    if (!CValve && (SCValve > 15)) return 1;
-    else return 0;
-}
-
-unsigned short CanTurnPump1On() {
-    if (cfg.use_pump1 && (!CPump1) && (SCPump1 > 2)) return 1;
-    else return 0;
-}
-
-unsigned short CanTurnPump1Off() {
-    if (CPump1 && !CValve && !CCommsPin1 && (SCPump1 > 5) && (SCValve > 5)) return 1;
-    else return 0;
-}
-
-unsigned short CanTurnPump2On() {
-    if (cfg.use_pump2 && (!CPump2) && (SCPump2 > 2)) return 1;
-    else return 0;
-}
-
-unsigned short CanTurnPump2Off() {
-    if (CPump2 && (SCPump2 > 5)) return 1;
-    else return 0;
-}
-
-unsigned short CanTurnValveOn() {
-    if (!CValve && (SCValve > 5)) return 1;
-    else return 0;
-}
-
-unsigned short CanTurnValveOff() {
-    if (CValve && (SCValve > 17)) return 1;
-    else return 0;
-}
-
-unsigned short CanTurnHeaterOn() {
-    unsigned short i = 0;
-    /* Do the check with config to see if its OK to use electric heater,
-    for example: if its on "night tariff" - switch it on */
-    /* Determine current time: */
-    if (!CHeater && (SCHeater > 29)) { i=1; }
-    if ( (current_timer_hour <= NEstop) || (current_timer_hour >= NEstart) ) {
-            /* NIGHT TARIFF TIME */
-            /* If heater use is allowed by config - turn it on */
-            if (cfg.use_electric_heater_night) return i;
-    }
-    else {
-            /* DAY TIME */
-            /* If heater use is allowed by config - turn it on */
-            if (cfg.use_electric_heater_day) return i;
-    }
-}
-
-unsigned short CanTurnHeaterOff() {
-    if ((CHeater) && (SCHeater > 59)) return 1;
-    else return 0;
-}
-
-unsigned short CanTurnHeatPumpLowOn() {
-    if (!CCommsPin1 && (SCCommsPin1 > 35) && CPump1 && (SCHeater > 2)) return 1;
-    else return 0;
-}
-
-unsigned short CanTurnHeatPumpLowOff() {
-    if (CCommsPin1 && (SCCommsPin1 > 59))  return 1;
-    else return 0;
-}
-
-unsigned short CanTurnHeatPumpHighOn() {
-    if (!CCommsPin2 && (SCCommsPin2 > 15) && CPump1 && (SCHeater > 2)) return 1;
-    else return 0;
-}
-
-unsigned short CanTurnHeatPumpHighOff() {
-    if (CCommsPin2 && (SCCommsPin2 > 59))  return 1;
-    else return 0;
-}
-
-unsigned short CanTurnCommsPin4On() {
-    return 1;
-}
-
-unsigned short CanTurnCommsPin4Off() {
-    if (CCommsPin4 && (SCCommsPin4 > 17)) return 1;
-    else return 0;
-}
-
-void TurnPump1Off()  { CPump1 = 0; SCPump1 = 0; }
-void TurnPump1On()  { CPump1 = 1; SCPump1 = 0; }
-void TurnPump2Off()  { CPump2  = 0; SCPump2 = 0; }
-void TurnPump2On()  { CPump2  = 1; SCPump2 = 0; }
-void TurnValveOff()    { CValve  = 0; SCValve = 0; }
-void TurnValveOn()    { CValve  = 1; SCValve = 0; }
-void TurnHeaterOff()  { CHeater = 0; SCHeater = 0; }
-void TurnHeaterOn()  { CHeater = 1; SCHeater = 0; }
-void TurnHeatPumpLowOff()  { CCommsPin1 = 0; SCCommsPin1 = 0; }
-void TurnHeatPumpLowOn()  { CCommsPin1 = 1; SCCommsPin1 = 0; }
-void TurnHeatPumpHighOff() { CCommsPin2 = 0; SCCommsPin2 = 0; }
-void TurnHeatPumpHighOn() { CCommsPin2 = 1; SCCommsPin2 = 0; }
-void TurnCommsPin4Off()      { CCommsPin4 = 0; SCCommsPin4 = 0; } 
-void TurnCommsPin4On()      { CCommsPin4 = 1; SCCommsPin4 = 0; }
 
 void
 ActivateDevicesState(const short HeatMode) {
