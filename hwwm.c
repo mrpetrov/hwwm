@@ -1342,7 +1342,7 @@ unsigned short CanTurnHeatPumpLowOn() {
 }
 
 unsigned short CanTurnHeatPumpLowOff() {
-    if (CCommsPin1 && (SCCommsPin1 > 59))  return 1;
+    if (CCommsPin1 && (SCCommsPin1 > 119))  return 1;
     else return 0;
 }
 
