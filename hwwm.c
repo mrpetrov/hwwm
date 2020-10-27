@@ -1546,7 +1546,7 @@ ComputeWantedState() {
             if (mid_buf == 3) { /* heater + heat pump */
                 sprintf( data + strlen(data), " 2-3");
                 /* give boiler priority if possible - HP LOW HP HIGH needs to be off settled and HP HIGH - off */
-                if ((SCCommsPin1>2) && (!CCommsPin2 && (SCCommsPin2>5))) {
+                if ((SCCommsPin1>2) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* verify rules following */
                     sprintf( data + strlen(data), " check1");
                     wantHon = 1;
@@ -1556,7 +1556,7 @@ ComputeWantedState() {
                 StateDesired |= 32;
                 if (StateDesired & 32) sprintf( data + strlen(data), " OK1!");
                 /* for HP HIGH - boiler should not be needed and others should have settled */
-                if (!wantHon && (SCCommsPin1>2) && (!CCommsPin2 && (SCCommsPin2>5))) {
+                if (!wantHon && SCHeater && (SCCommsPin1>2) && (!CCommsPin2 && (SCCommsPin2))) {
                     /* check if turning HP high follows its rules */
                 sprintf( data + strlen(data), " check3");
                     StateDesired |= 64;
