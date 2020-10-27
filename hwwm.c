@@ -927,17 +927,17 @@ signal_handler(int sig)
 {
     switch(sig) {
         case SIGUSR1:
-        log_message(LOG_FILE, "INFO: Signal SIGUSR1 caught. Will re-read config file soon.");
+        log_message(LOG_FILE, "INFO: Signal SIGUSR1 caught. Will re-read config file soon. *************************");
         need_to_read_cfg = 1;
         break;
         case SIGUSR2:
-        log_message(LOG_FILE, "INFO: Signal SIGUSR2 caught. Not implemented. Continuing.");
+        log_message(LOG_FILE, "INFO: Signal SIGUSR2 caught. Not implemented. Continuing. *************************");
         break;
         case SIGHUP:
-        log_message(LOG_FILE, "INFO: Signal SIGHUP caught. Not implemented. Continuing.");
+        log_message(LOG_FILE, "INFO: Signal SIGHUP caught. Not implemented. Continuing. *************************");
         break;
         case SIGTERM:
-        log_message(LOG_FILE, "INFO: Terminate signal caught. Stopping.");
+        log_message(LOG_FILE, "INFO: Terminate signal caught. Stopping. *************************");
         WritePersistentPower();
         if ( ! DisableGPIOpins() ) {
             log_message(LOG_FILE, "WARNING: Errors disabling GPIO pins! Quitting anyway.");
