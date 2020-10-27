@@ -1535,7 +1535,7 @@ ComputeWantedState() {
             if (mid_buf == 2) { /* we would like to use heat pump services */
                 sprintf( data + strlen(data), " 2-2");
                 /* check if HP HIGH has been OFF and heater - settled */
-                if ((SCHeater) && (!CCommsPin2 && (SCCommsPin2>5))) {
+                if ((SCHeater>2) && (!CCommsPin2 && (SCCommsPin2>5))) {
                      /* verify rules following */
                     sprintf( data + strlen(data), " check");
                     StateDesired |= 96;
@@ -1607,7 +1607,7 @@ ComputeWantedState() {
         break;
         }
         /* after the swtich above - request pump 1 only if needed */
-        //if ( StateDesired & 32 ) wantP1on = 1;
+        if ( StateDesired & 32 ) wantP1on = 1;
     }
     
     log_message(DATA_FILE, data);
