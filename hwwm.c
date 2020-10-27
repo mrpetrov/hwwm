@@ -98,6 +98,11 @@ float sensors_prv[TOTALSENSORS+1] = { 0, -200, -200, -200, -200, -200 };
 /*                             0    1    2    3    4    5    6    7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
 short HTTB[24] = { 38, 36, 36, 36, 36, 38, 40, 40, 40, 40, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 40 };
 
+/* HTTBma = HTTB monthly adjustment
+    value to add according to month of year */
+/*                           0    1    2   3  4  5   6    7   8  9  10 11  12  */
+short HTTBma[13] = { 0, 10, 10, 8, 5, 0, -5, -8, -8, 2, 8, 10, 11 };
+
 #define   currentHTTB       HTTB[current_timer_hour]
 
 float furnace_water_target = 22.33;
@@ -1173,9 +1178,6 @@ GetCurrentTime() {
 
     current_timer_hour = atoi( buff );
     
-    /* do furnace water target temp adjusment based on the environment temp, if it looks reasonable */
-    if ( (Tenv > -30) && (Tenv < 50) ) { furnace_water_target = currentHTTB - Tenv; }
-
     if ((current_timer_hour == 8) && ((ProgramRunCycles % (6*60)) == 0)) must_check = 1;
 
     /* adjust night tariff start and stop hours at program start and
@@ -1222,6 +1224,10 @@ GetCurrentTime() {
                 NightlyPowerUsed = 0;
             }
         }
+    }
+    /* do furnace water target temp adjusment based on the environment temp, if it looks reasonable */
+    if ( (Tenv > -30) && (Tenv < 50) ) { 
+        furnace_water_target = currentHTTB - Tenv + HTTBma[current_month];
     }
 }
 
