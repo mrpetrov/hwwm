@@ -1522,7 +1522,7 @@ ComputeWantedState() {
             }
         break;
         case 2: /* 2 BIG CONSUMERS allowed*/
-            if (mid_buf == 1) { /* only boiler needs electrical heater */
+            if (mid_buf == 1) { /* heater only */
                 sprintf( data + strlen(data), " 2-1");
                 /* check if HP HIGH has been off and HP LOW - settled */
                 if ( (SCCommsPin1) && (!CCommsPin2 && (SCCommsPin2))) {
@@ -1532,10 +1532,10 @@ ComputeWantedState() {
                     if (wantHon) sprintf( data + strlen(data), " OK!");
                 }
             }
-            if (mid_buf == 2) { /* we would like to use heat pump services */
+            if (mid_buf == 2) { /* heat pump only */
                 sprintf( data + strlen(data), " 2-2");
-                /* check if HP HIGH has been OFF and heater - settled */
-                if ((SCHeater>2) && (!CCommsPin2 && (SCCommsPin2>5))) {
+                /* here we only need the heater to be off and settled */
+                if (!CHeater && (SCHeater) ) {
                      /* verify rules following */
                     sprintf( data + strlen(data), " check");
                     StateDesired |= 96;
@@ -1543,7 +1543,7 @@ ComputeWantedState() {
                     if (StateDesired & 64) sprintf( data + strlen(data), " OK2!");
                  }
             }
-            if (mid_buf == 3) { /* we would like to use BOTH heat pump and heater */
+            if (mid_buf == 3) { /* heater + heat pump */
                 sprintf( data + strlen(data), " 2-3");
                 /* give boiler priority if possible - HP LOW HP HIGH needs to be off settled and HP HIGH - off */
                 if ((SCCommsPin1>2) && (!CCommsPin2 && (SCCommsPin2>5))) {
