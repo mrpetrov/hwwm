@@ -1607,7 +1607,7 @@ ComputeWantedState() {
         break;
         }
         /* after the swtich above - request pump 1 only if needed */
-        if ( StateDesired & 32 ) wantP1on = 1;
+        //if ( StateDesired & 32 ) wantP1on = 1;
     }
     
     log_message(DATA_FILE, data);
