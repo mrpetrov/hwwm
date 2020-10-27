@@ -1628,7 +1628,7 @@ ComputeWantedState() {
 }
 
 void
-ActivateDevicesState(const short HeatMode) {
+ActivateDevicesState(const short _ST_) {
     char current_state = 0;
     char new_state = 0;
 
@@ -1641,7 +1641,7 @@ ActivateDevicesState(const short HeatMode) {
     if ( CCommsPin2 ) current_state |= 64;
     if ( CCommsPin4 ) current_state |= 128;
     /* make changes as needed */
-    /* HeatMode's bits describe the peripherals desired state:
+    /* _ST_'s bits describe the peripherals desired state:
         bit 1  (1) - pump 1
         bit 2  (2) - pump 2
         bit 3  (4) - valve
@@ -1649,15 +1649,15 @@ ActivateDevicesState(const short HeatMode) {
         bit 5 (16) - heater forced
         bit 6 (32) - want heat pump LOW on
         bit 7 (64) - want heat pump HIGH on */
-    if (HeatMode &   1)  { if (CanTurnPump1On()) TurnPump1On(); } else { if (CanTurnPump1Off()) TurnPump1Off(); }
-    if (HeatMode &   2)  { if (CanTurnPump2On()) TurnPump2On(); } else { if (CanTurnPump2Off()) TurnPump2Off(); }
-    if (HeatMode &   4)  {  if (CanTurnValveOn()) TurnValveOn(); } else {  if (CanTurnValveOff()) TurnValveOff(); }
-    if (HeatMode &   8)  {  if (CanTurnHeaterOn()) TurnHeaterOn(); }
-    if (HeatMode &  16) { TurnHeaterOn(); }
-    if ( !(HeatMode & 24) ) { if (CanTurnHeaterOff()) TurnHeaterOff(); }
-    if (HeatMode &  32)  { if (CanTurnHeatPumpLowOn()) TurnHeatPumpLowOn(); } else { if (CanTurnHeatPumpLowOff()) TurnHeatPumpLowOff(); }
-    if (HeatMode &  64)  { if (CanTurnHeatPumpHighOn()) TurnHeatPumpHighOn(); } else { if (CanTurnHeatPumpHighOff()) TurnHeatPumpHighOff(); }
-    if (HeatMode & 128) { if (CanTurnCommsPin4On()) TurnCommsPin4On(); } else { if (CanTurnCommsPin4Off()) TurnCommsPin4Off(); }
+    if (_ST_ &   1)  { if (CanTurnPump1On()) TurnPump1On(); } else { if (CanTurnPump1Off()) TurnPump1Off(); }
+    if (_ST_ &   2)  { if (CanTurnPump2On()) TurnPump2On(); } else { if (CanTurnPump2Off()) TurnPump2Off(); }
+    if (_ST_ &   4)  {  if (CanTurnValveOn()) TurnValveOn(); } else {  if (CanTurnValveOff()) TurnValveOff(); }
+    if (_ST_ &   8)  {  if (CanTurnHeaterOn()) TurnHeaterOn(); }
+    if (_ST_ &  16) { TurnHeaterOn(); }
+    if ( !(_ST_ & 24) ) { if (CanTurnHeaterOff()) TurnHeaterOff(); }
+    if (_ST_ &  32)  { if (CanTurnHeatPumpLowOn()) TurnHeatPumpLowOn(); } else { if (CanTurnHeatPumpLowOff()) TurnHeatPumpLowOff(); }
+    if (_ST_ &  64)  { if (CanTurnHeatPumpHighOn()) TurnHeatPumpHighOn(); } else { if (CanTurnHeatPumpHighOff()) TurnHeatPumpHighOff(); }
+    if (_ST_ & 128) { if (CanTurnCommsPin4On()) TurnCommsPin4On(); } else { if (CanTurnCommsPin4Off()) TurnCommsPin4Off(); }
     
     SCPump1++;
     SCPump2++;
