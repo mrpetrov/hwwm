@@ -1824,8 +1824,8 @@ main(int argc, char *argv[])
         }
         AdjustWantedStateForBatteryPower(DevicesWantedState);
         ActivateDevicesState(DevicesWantedState);
-        /* for the first 3 cycles  = 30 seconds - do not log anything */
-        if ( ProgramRunCycles > 2) { LogData(DevicesWantedState); }
+        /* for the first cycle  = 10 seconds - do not log anything */
+        if ( ProgramRunCycles ) { LogData(DevicesWantedState); }
         ProgramRunCycles++;
         if ( just_started ) { just_started--; }
         if ( need_to_read_cfg ) {
