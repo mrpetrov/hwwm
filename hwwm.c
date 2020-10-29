@@ -1784,6 +1784,12 @@ main(int argc, char *argv[])
         exit(12);
     }
 
+    /* By default all control states are 0 == OFF;
+    With putting output pins to OFF, we make sure that relay will obey
+    inverting output setting of config file at startup, and thus avoid
+    an unnecessary very short toggling of output relays on startup */
+    ControlStateToGPIO();
+
     do {
         /* Do all the important stuff... */
         if ( gettimeofday( &tvalBefore, NULL ) ) {
