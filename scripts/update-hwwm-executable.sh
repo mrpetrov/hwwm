@@ -2,6 +2,7 @@
 
 daemon=hwwm
 daemon_pid=/run/$daemon.pid
+log_file=/var/log/$daemon.log
 
 echo "Trying to kill running daemon $daemon..."
 if [ ! -e $daemon_pid ]
@@ -17,3 +18,5 @@ cp /home/pi/$daemon/$daemon /usr/sbin
 sleep 3
 echo "Starting $daemon again..."
 /usr/sbin/$daemon
+echo "Here is the log:"
+tail -n 25 $log_file
