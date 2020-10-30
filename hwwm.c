@@ -1015,6 +1015,8 @@ SetGPIODirection()
 {
     /* input pins */
     if (-1 == GPIODirection(cfg.bat_powered_pin, IN))  return 0;
+    if (-1 == GPIODirection(cfg.commspin3_pin, IN))  return 0;
+    if (-1 == GPIODirection(cfg.commspin4_pin, IN))  return 0;
     /* output pins */
     if (-1 == GPIODirection(cfg.pump1_pin, OUT)) return 0;
     if (-1 == GPIODirection(cfg.pump2_pin, OUT)) return 0;
@@ -1022,8 +1024,6 @@ SetGPIODirection()
     if (-1 == GPIODirection(cfg.el_heater_pin, OUT))  return 0;
     if (-1 == GPIODirection(cfg.commspin1_pin, OUT))  return 0;
     if (-1 == GPIODirection(cfg.commspin2_pin, OUT))  return 0;
-    if (-1 == GPIODirection(cfg.commspin3_pin, OUT))  return 0;
-    if (-1 == GPIODirection(cfg.commspin4_pin, OUT))  return 0;
     return -1;
 }
 
