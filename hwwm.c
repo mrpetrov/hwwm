@@ -167,6 +167,14 @@ unsigned short pump_start_hour_for[13] = { 11, 14, 13, 12, 11, 10, 9, 9, 10, 11,
 /* Comms buffer */
 unsigned short COMMS = 0;
 
+/* Send bits 
+    States:
+    0 == ALL OFF
+    1 == 1 AC ON a.k.a. Heat Pump Low mode
+    2 == 2 ACs ON a.k.a. Heat Pump HIGH mode
+    3 == 3 all is OFF, because we are powered by BATTERY  */
+unsigned short sendBits = 0;
+
 struct cfg_struct
 {
     char    tkotel_sensor[MAXLEN];
@@ -1115,18 +1123,17 @@ ReadCommsPins() {
 /* Write comms  */
 void
 WriteCommsPins() {
-    unsigned short t = 0;
-    
+    sendBits = 0;
     /* put state on GPIO pins */
     if (CPowerByBattery) {
-        t = 3;
+        sendBits = 3;
     }
     else {
-        if (CHP_low) t = 1;
-        if (CHP_high) t = 2;
+        if (CHP_low) sendBits = 1;
+        if (CHP_high) sendBits = 2;
     }
-    GPIOWrite( cfg.commspin1_pin,  (t&1) );
-    GPIOWrite( cfg.commspin2_pin,  (t&2) );
+    GPIOWrite( cfg.commspin1_pin,  (sendBits&1) );
+    GPIOWrite( cfg.commspin2_pin,  (sendBits&2) );
 }
 
 /* Function to make GPIO state represent what is in controls[] */
@@ -1279,7 +1286,7 @@ LogData(short HM) {
     if (CHP_low) sprintf( data + strlen(data), " HP1");
     if (CHP_high) sprintf( data + strlen(data), " HP2");
     if (CPowerByBattery) sprintf( data + strlen(data), " UPS");
-    sprintf( data + strlen(data), "; COMMS: %d", COMMS);
+    sprintf( data + strlen(data), "; COMMS:%d sendBits:", COMMS, sendBits);
     log_message(DATA_FILE, data);
 
     sprintf( data, ",Temp1,%5.3f\n_,Temp2,%5.3f\n_,Temp3,%5.3f\n_,Temp4,%5.3f\n_,Temp5,%5.3f\n"\
