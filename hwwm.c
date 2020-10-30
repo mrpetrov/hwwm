@@ -1112,9 +1112,9 @@ ReadCommsPins() {
     if (temp) COMMS |= 2;
 }
 
-/* Function to make GPIO state represent what is in controls[] */
+/* Write comms  */
 void
-ControlStateToGPIO() {
+WriteCommsPins() {
     unsigned short t = 0;
     
     /* put state on GPIO pins */
@@ -1127,6 +1127,12 @@ ControlStateToGPIO() {
     }
     GPIOWrite( cfg.commspin1_pin,  (t&1) );
     GPIOWrite( cfg.commspin2_pin,  (t&2) );
+}
+
+/* Function to make GPIO state represent what is in controls[] */
+void
+ControlStateToGPIO() {
+    /* put state on GPIO pins */
     if (cfg.invert_output) {
             GPIOWrite( cfg.pump1_pin, !CPump1 );
             GPIOWrite( cfg.pump2_pin, !CPump2 );
@@ -1693,7 +1699,7 @@ ActivateDevicesState(const short _ST_) {
     if ( CHP_low ) new_state |= 32;
     if ( CHP_high ) new_state |= 64;
     /* if current state and new state are different... */
-    if (( current_state != new_state ) || ( CPowerByBattery != CPowerByBatteryPrev )) {
+    if ( current_state != new_state ) {
         /* then put state on GPIO pins - this prevents lots of toggling at every 10s decision */
         ControlStateToGPIO();
     }
@@ -1833,6 +1839,7 @@ main(int argc, char *argv[])
         }
         AdjustWantedStateForBatteryPower(DevicesWantedState);
         ActivateDevicesState(DevicesWantedState);
+        WriteCommsPins();
         /* for the first cycle  = 10 seconds - do not log anything */
         if ( ProgramRunCycles ) { LogData(DevicesWantedState); }
         ProgramRunCycles++;
