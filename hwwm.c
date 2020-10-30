@@ -1286,7 +1286,7 @@ LogData(short HM) {
     if (CHP_low) sprintf( data + strlen(data), " HP1");
     if (CHP_high) sprintf( data + strlen(data), " HP2");
     if (CPowerByBattery) sprintf( data + strlen(data), " UPS");
-    sprintf( data + strlen(data), "; COMMS:%d sendBits:%d", COMMS, sendBits);
+    sprintf( data + strlen(data), "; sendBits:%d COMMS:%d ", sendBits, COMMS);
     log_message(DATA_FILE, data);
 
     sprintf( data, ",Temp1,%5.3f\n_,Temp2,%5.3f\n_,Temp3,%5.3f\n_,Temp4,%5.3f\n_,Temp5,%5.3f\n"\
