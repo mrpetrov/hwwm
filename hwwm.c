@@ -1652,7 +1652,6 @@ ActivateDevicesState(const short _ST_) {
     if ( CHeater ) current_state |= 8;
     if ( CHP_low ) current_state |= 32;
     if ( CHP_high ) current_state |= 64;
-    if ( CCommsPin4 ) current_state |= 128;
     /* make changes as needed */
     /* _ST_'s bits describe the peripherals desired state:
         bit 1  (1) - pump 1
