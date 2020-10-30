@@ -117,10 +117,8 @@ short controls[11] = { -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 #define   CHeater               controls[4]
 #define   CPowerByBattery       controls[5]
 #define   CPowerByBatteryPrev   controls[6]
-#define   CCommsPin1          controls[7]   // pin/bit to signal need for low heat - one AC can be ON
-#define   CCommsPin2          controls[8]   // pin/bit to request full heat (both ACs)
-#define   CCommsPin3          controls[9]   // pin/bit to ????
-#define   CCommsPin4          controls[10] // pin/bit to signal we on battery power
+#define   CHP_low          controls[7]
+#define   CHP_high          controls[8]
 
 /* controls state cycles - zeroed on change to state */
 long ctrlstatecycles[10] = { -1, 150000, 150000, 2200, 2200, 32, 32, 0, 0, -1 };
@@ -129,10 +127,8 @@ long ctrlstatecycles[10] = { -1, 150000, 150000, 2200, 2200, 32, 32, 0, 0, -1 };
 #define   SCPump2               ctrlstatecycles[2]
 #define   SCValve               ctrlstatecycles[3]
 #define   SCHeater              ctrlstatecycles[4]
-#define   SCCommsPin1              ctrlstatecycles[5]
-#define   SCCommsPin2              ctrlstatecycles[6]
-#define   SCCommsPin3              ctrlstatecycles[7]
-#define   SCCommsPin4              ctrlstatecycles[8]
+#define   SCHP_low              ctrlstatecycles[5]
+#define   SCHP_high              ctrlstatecycles[6]
 
 float TotalPowerUsed;
 float NightlyPowerUsed;
@@ -167,6 +163,9 @@ unsigned short now_is_winter = 0;
 
 /* array storing the hour at wich to make the solar pump daily run for each month */
 unsigned short pump_start_hour_for[13] = { 11, 14, 13, 12, 11, 10, 9, 9, 10, 11, 12, 13, 14 };
+
+/* Comms buffer */
+unsigned short COMMS = 0;
 
 struct cfg_struct
 {
@@ -1101,14 +1100,33 @@ ReadExternalPower() {
     CPowerByBattery = GPIORead(cfg.bat_powered_pin);
 }
 
+/* Read comms and assemble the global byte COMMS */
+void
+ReadCommsPins() {
+    unsigned short temp = 0;
+    COMMS = 0;
+    temp = GPIORead(cfg.commspin3_pin);
+    if (temp) COMMS |= 1;
+    temp = 0;
+    temp = GPIORead(cfg.commspin4_pin);
+    if (temp) COMMS |= 2;
+}
+
 /* Function to make GPIO state represent what is in controls[] */
 void
 ControlStateToGPIO() {
+    unsigned short t = 0;
+    
     /* put state on GPIO pins */
-    GPIOWrite( cfg.commspin1_pin,  CCommsPin1 );
-    GPIOWrite( cfg.commspin2_pin,  CCommsPin2 );
-    GPIOWrite( cfg.commspin3_pin,  CCommsPin3 );
-    GPIOWrite( cfg.commspin4_pin,  CCommsPin4 );
+    if (CPowerByBattery) {
+        t = 3;
+    }
+    else {
+        if (CHP_low) t = 1;
+        if (CHP_high) t = 2;
+    }
+    GPIOWrite( cfg.commspin1_pin,  (t&1) );
+    GPIOWrite( cfg.commspin2_pin,  (t&2) );
     if (cfg.invert_output) {
             GPIOWrite( cfg.pump1_pin, !CPump1 );
             GPIOWrite( cfg.pump2_pin, !CPump2 );
@@ -1245,20 +1263,17 @@ LogData(short HM) {
     if ((HM&4)==4) sprintf( data + strlen(data), " V");
     if ((HM&8)==8) sprintf( data + strlen(data), " H");
     if ((HM&16)==16) sprintf( data + strlen(data), " Hf");
-    if ((HM&32)==32) sprintf( data + strlen(data), " C1");
-    if ((HM&64)==64) sprintf( data + strlen(data), " C2");
-    if ((HM&128)==128) sprintf( data + strlen(data), " C4");
+    if ((HM&32)==32) sprintf( data + strlen(data), " HP1");
+    if ((HM&64)==64) sprintf( data + strlen(data), " HP2");
     sprintf( data + strlen(data), "; GOT:");
     if (CPump1) sprintf( data + strlen(data), " P1");
     if (CPump2) sprintf( data + strlen(data), " P2");
     if (CValve) sprintf( data + strlen(data), " V");
     if (CHeater) sprintf( data + strlen(data), " H");
-    if (CCommsPin1) sprintf( data + strlen(data), " C1");
-    if (CCommsPin2) sprintf( data + strlen(data), " C2");
-    if (CCommsPin3) sprintf( data + strlen(data), " C3");
-    if (CCommsPin4) sprintf( data + strlen(data), " C4");
+    if (CHP_low) sprintf( data + strlen(data), " HP1");
+    if (CHP_high) sprintf( data + strlen(data), " HP2");
     if (CPowerByBattery) sprintf( data + strlen(data), " UPS");
-    if ((HM&256)==256) sprintf( data + strlen(data), " idle");
+    sprintf( data + strlen(data), "; COMMS: %d", COMMS);
     log_message(DATA_FILE, data);
 
     sprintf( data, ",Temp1,%5.3f\n_,Temp2,%5.3f\n_,Temp3,%5.3f\n_,Temp4,%5.3f\n_,Temp5,%5.3f\n"\
@@ -1294,7 +1309,7 @@ unsigned short CanTurnPump1On() {
 }
 
 unsigned short CanTurnPump1Off() {
-    if (CPump1 && !CValve && !CCommsPin1 && (SCPump1 > 5) && (SCValve > 5)) return 1;
+    if (CPump1 && !CValve && !CHP_low && (SCPump1 > 5) && (SCValve > 5)) return 1;
     else return 0;
 }
 
@@ -1343,31 +1358,22 @@ unsigned short CanTurnHeaterOff() {
 }
 
 unsigned short CanTurnHeatPumpLowOn() {
-    if (!CCommsPin1 && (SCCommsPin1 > 29) && CPump1 ) return 1;
+    if (!CHP_low && (COMMS==3) && CPump1 ) return 1;
     else return 0;
 }
 
 unsigned short CanTurnHeatPumpLowOff() {
-    if (CCommsPin1 && (SCCommsPin1 > 119))  return 1;
+    if (CHP_low && (COMMS==3))  return 1;
     else return 0;
 }
 
 unsigned short CanTurnHeatPumpHighOn() {
-    if (!CCommsPin2 && (SCCommsPin2 > 29) && CPump1 && CCommsPin1) return 1;
+    if (!CHP_high && CHP_low && (COMMS==3) && CPump1) return 1;
     else return 0;
 }
 
 unsigned short CanTurnHeatPumpHighOff() {
-    if (CCommsPin2 && (SCCommsPin2 > 59))  return 1;
-    else return 0;
-}
-
-unsigned short CanTurnCommsPin4On() {
-    return 1;
-}
-
-unsigned short CanTurnCommsPin4Off() {
-    if (CCommsPin4 && (SCCommsPin4 > 17)) return 1;
+    if (CHP_high && (COMMS==3))  return 1;
     else return 0;
 }
 
@@ -1379,12 +1385,10 @@ void TurnValveOff()    { CValve  = 0; SCValve = 0; }
 void TurnValveOn()    { CValve  = 1; SCValve = 0; }
 void TurnHeaterOff()  { CHeater = 0; SCHeater = 0; }
 void TurnHeaterOn()  { CHeater = 1; SCHeater = 0; }
-void TurnHeatPumpLowOff()  { CCommsPin1 = 0; SCCommsPin1 = 0; }
-void TurnHeatPumpLowOn()  { CCommsPin1 = 1; SCCommsPin1 = 0; }
-void TurnHeatPumpHighOff() { CCommsPin2 = 0; SCCommsPin2 = 0; }
-void TurnHeatPumpHighOn() { CCommsPin2 = 1; SCCommsPin2 = 0; }
-void TurnCommsPin4Off()      { CCommsPin4 = 0; SCCommsPin4 = 0; } 
-void TurnCommsPin4On()      { CCommsPin4 = 1; SCCommsPin4 = 0; }
+void TurnHeatPumpLowOff()  { CHP_low = 0; SCHP_low = 0; }
+void TurnHeatPumpLowOn()  { CHP_low = 1; SCHP_low = 0; }
+void TurnHeatPumpHighOff() { CHP_high = 0; SCHP_high = 0; }
+void TurnHeatPumpHighOn() { CHP_high = 1; SCHP_high = 0; }
 
 /* Return non-zero value on critical condition found based on current data in sensors[] */
 short
@@ -1467,12 +1471,9 @@ ComputeWantedState() {
     }
         
     /* FURNACE PUMP: HOUSE KEEPING */
-    if (cfg.pump1_always_on) {
-        wantP1on = 1;
-    }  else {
-        /* Turn furnace pump on every 2 hours */
-        if ( (!CPump1) && (SCPump1 > (6*60*2)) ) wantP1on = 1;
-    }
+    if (cfg.pump1_always_on) wantP1on = 1;
+    /* Turn furnace pump on every 2 hours */
+    if ( (!CPump1) && (SCPump1 > (6*60*2)) ) wantP1on = 1;
 
     /* ELECTRICAL HEATER: SMART FUNCTIONS */
     /* Two energy saving functions follow (if activated): */
@@ -1509,7 +1510,7 @@ ComputeWantedState() {
             if (mid_buf == 1) { /* only boiler needs electrical heater */
                 sprintf( data + strlen(data), " 1-1");
                 /* check if other big consumers have been off at least 1 minute */
-                if ((!CCommsPin1 && (SCCommsPin1>5)) && (!CCommsPin2 && (SCCommsPin2>5))) {
+                if ((!CHP_low && (SCHP_low>5)) && (!CHP_high && (SCHP_high>5))) {
                     /* and if we can turn heater ON */
                     sprintf( data + strlen(data), " check");
                     wantHon = 1;
@@ -1519,7 +1520,7 @@ ComputeWantedState() {
             if (mid_buf == 2) { /* we would like to use heat pump services */
                 sprintf( data + strlen(data), " 1-2");
                 /* check if other big consumers have been off at least 1 cycle */
-                if ((!CHeater && (SCHeater)) && (!CCommsPin2 && (SCCommsPin2))) {
+                if ((!CHeater && (SCHeater)) && (!CHP_high && (SCHP_high))) {
                     /* and if we can turn heater ON */
                     sprintf( data + strlen(data), " check");
                     StateDesired |= 32;
@@ -1531,7 +1532,7 @@ ComputeWantedState() {
             if (mid_buf == 1) { /* heater only */
                 sprintf( data + strlen(data), " 2-1");
                 /* check if HP HIGH has been off and HP LOW - settled */
-                if ( (SCCommsPin1) && (!CCommsPin2 && (SCCommsPin2))) {
+                if ( (SCHP_low) && (!CHP_high && (SCHP_high))) {
                     /* and if we can turn heater ON */
                     sprintf( data + strlen(data), " check");
                     wantHon = 1;
@@ -1552,7 +1553,7 @@ ComputeWantedState() {
             if (mid_buf == 3) { /* heater + heat pump */
                 sprintf( data + strlen(data), " 2-3");
                 /* give boiler priority if possible - HP LOW HP HIGH needs to be off settled and HP HIGH - off */
-                if ((SCCommsPin1>2) && (!CCommsPin2 && (SCCommsPin2))) {
+                if ((SCHP_low>2) && (!CHP_high && (SCHP_high))) {
                     /* verify rules following */
                     sprintf( data + strlen(data), " check1");
                     wantHon = 1;
@@ -1562,7 +1563,7 @@ ComputeWantedState() {
                 StateDesired |= 32;
                 if (StateDesired & 32) sprintf( data + strlen(data), " OK1!");
                 /* for HP HIGH - boiler should not be needed and others should have settled */
-                if (!wantHon && SCHeater && (SCCommsPin1>2) && (!CCommsPin2 && (SCCommsPin2))) {
+                if (!wantHon && SCHeater && (SCHP_low>2) && (!CHP_high && (SCHP_high))) {
                     /* check if turning HP high follows its rules */
                 sprintf( data + strlen(data), " check3");
                     StateDesired |= 64;
@@ -1574,7 +1575,7 @@ ComputeWantedState() {
             if (mid_buf == 1) { /* only boiler needs electrical heater */
                 sprintf( data + strlen(data), " 3-1");
                 /* avoid simultaneous switching */
-                if ((SCCommsPin1) && (SCCommsPin2>2)) {
+                if ((SCHP_low) && (SCHP_high>2)) {
                     /* verify rules following */
                     sprintf( data + strlen(data), " check1");
                     wantHon = 1;
@@ -1584,7 +1585,7 @@ ComputeWantedState() {
             if (mid_buf == 2) { /* we would like to use heat pump services */
                 sprintf( data + strlen(data), " 3-2");
                 /* avoid simultaneous switching */
-                if ( SCHeater && SCCommsPin1 && (SCCommsPin2>5)) {
+                if ( SCHeater && SCHP_low && (SCHP_high>5)) {
                     /* verify rules following */
                     sprintf( data + strlen(data), " check");
                      StateDesired |= 96;
@@ -1595,14 +1596,14 @@ ComputeWantedState() {
             if (mid_buf == 3) { /* we would like to use BOTH heat pump and heater */
                 sprintf( data + strlen(data), " 3-3");
                 /* avoid simultaneous switching */
-                if ((SCCommsPin1) && (SCCommsPin2>2)) {
+                if ((SCHP_low) && (SCHP_high>2)) {
                     /* verify rules following */
                     sprintf( data + strlen(data), " check1");
                     wantHon = 1;
                     if (wantHon) sprintf( data + strlen(data), " OK!");
                 }
                 /* avoid simultaneous switching */
-                if ( SCHeater && SCCommsPin1 && (SCCommsPin2>5)) {
+                if ( SCHeater && SCHP_low && (SCHP_high>5)) {
                     /* verify rules following */
                     sprintf( data + strlen(data), " check2");
                      StateDesired |= 96;
@@ -1622,7 +1623,6 @@ ComputeWantedState() {
     if ( wantP2on ) StateDesired |= 2;
     if ( wantVon )  StateDesired |= 4;
     if ( wantHon )  StateDesired |= 8;
-    if ( CPowerByBattery )  StateDesired |= 128;
 
     return StateDesired;
 }
@@ -1637,8 +1637,8 @@ ActivateDevicesState(const short _ST_) {
     if ( CPump2 ) current_state |= 2;
     if ( CValve ) current_state |= 4;
     if ( CHeater ) current_state |= 8;
-    if ( CCommsPin1 ) current_state |= 32;
-    if ( CCommsPin2 ) current_state |= 64;
+    if ( CHP_low ) current_state |= 32;
+    if ( CHP_high ) current_state |= 64;
     if ( CCommsPin4 ) current_state |= 128;
     /* make changes as needed */
     /* _ST_'s bits describe the peripherals desired state:
@@ -1657,16 +1657,13 @@ ActivateDevicesState(const short _ST_) {
     if ( !(_ST_ & 24) ) { if (CanTurnHeaterOff()) TurnHeaterOff(); }
     if (_ST_ &  32)  { if (CanTurnHeatPumpLowOn()) TurnHeatPumpLowOn(); } else { if (CanTurnHeatPumpLowOff()) TurnHeatPumpLowOff(); }
     if (_ST_ &  64)  { if (CanTurnHeatPumpHighOn()) TurnHeatPumpHighOn(); } else { if (CanTurnHeatPumpHighOff()) TurnHeatPumpHighOff(); }
-    if (_ST_ & 128) { if (CanTurnCommsPin4On()) TurnCommsPin4On(); } else { if (CanTurnCommsPin4Off()) TurnCommsPin4Off(); }
     
     SCPump1++;
     SCPump2++;
     SCValve++;
     SCHeater++;
-    SCCommsPin1++;
-    SCCommsPin2++;
-    SCCommsPin3++;
-    SCCommsPin4++;
+    SCHP_low++;
+    SCHP_high++;
 
     /* Calculate total and night tariff electrical power used here: */
     if ( CHeater ) {
@@ -1693,11 +1690,10 @@ ActivateDevicesState(const short _ST_) {
     if ( CPump2 ) new_state |= 2;
     if ( CValve ) new_state |= 4;
     if ( CHeater ) new_state |= 8;
-    if ( CCommsPin1 ) new_state |= 32;
-    if ( CCommsPin2 ) new_state |= 64;
-    if ( CCommsPin4 ) new_state |= 128;
+    if ( CHP_low ) new_state |= 32;
+    if ( CHP_high ) new_state |= 64;
     /* if current state and new state are different... */
-    if ( current_state != new_state ) {
+    if (( current_state != new_state ) || ( CPowerByBattery != CPowerByBatteryPrev )) {
         /* then put state on GPIO pins - this prevents lots of toggling at every 10s decision */
         ControlStateToGPIO();
     }
@@ -1809,6 +1805,7 @@ main(int argc, char *argv[])
         iter++;
         ReadSensors();
         ReadExternalPower();
+        ReadCommsPins();
         /* do what "mode" from CFG files says - watch the LOG file to see used values */
         switch (cfg.mode) {
             default:
