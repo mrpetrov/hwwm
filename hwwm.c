@@ -1289,6 +1289,10 @@ LogData(short HM) {
     sprintf( data + strlen(data), "; sendBits:%d COMMS:%d ", sendBits, COMMS);
     log_message(DATA_FILE, data);
 
+    /* for the first 2 cycles = 20 seconds - do not create or update the files that go out to
+       other systems - sometimes there is garbage, which would be nice if is not sent at all */
+    if ( ProgramRunCycles < 2 ) return;
+
     sprintf( data, ",Temp1,%5.3f\n_,Temp2,%5.3f\n_,Temp3,%5.3f\n_,Temp4,%5.3f\n_,Temp5,%5.3f\n"\
     "_,Pump1,%d\n_,Pump2,%d\n_,Valve,%d\n_,Heater,%d\n_,PoweredByBattery,%d\n"\
     "_,TempWanted,%d\n_,BoilerTabsMax,%d\n_,ElectricityUsed,%5.3f\n_,ElectricityUsedNT,%5.3f",\
@@ -1846,8 +1850,7 @@ main(int argc, char *argv[])
         AdjustWantedStateForBatteryPower(DevicesWantedState);
         ActivateDevicesState(DevicesWantedState);
         WriteCommsPins();
-        /* for the first cycle  = 10 seconds - do not log anything */
-        if ( ProgramRunCycles ) { LogData(DevicesWantedState); }
+        LogData(DevicesWantedState);
         ProgramRunCycles++;
         if ( just_started ) { just_started--; }
         if ( need_to_read_cfg ) {
