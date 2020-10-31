@@ -1549,7 +1549,7 @@ ComputeWantedState() {
                     break;
                 case 1: /* want heater */
                     break;
-                case >1: /* want HPL */
+                case 2 ... 7: /* want HPL */
                     /* check if heater is needed - if so, leave only it on the request */
                     if (bigCwant&1) bigCwant = 1;
                     break;
