@@ -96,12 +96,12 @@ float sensors_prv[TOTALSENSORS+1] = { 0, -200, -200, -200, -200, -200 };
  *  hwwm will get to the real target by substracting the outside temp
  *  from the values defined in this array */
 /*                             0    1    2    3    4    5    6    7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
-short HTTB[24] = { 38, 36, 36, 36, 36, 38, 40, 40, 40, 40, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 40 };
+short HTTB[24] = { 38, 36, 33, 33, 35, 38, 40, 43, 43, 41, 41, 40, 40, 40, 41, 43, 43, 43, 45, 45, 43, 43, 43, 40 };
 
 /* HTTBma = HTTB monthly adjustment
     value to add according to month of year */
-/*                           0    1    2   3  4  5   6    7   8  9  10 11  12  */
-short HTTBma[13] = { 0, 10, 10, 8, 5, 0, -5, -8, -8, 2, 8, 10, 11 };
+/*                                0   1    2   3  4   5    6   7    8  9 10 11  12  */
+short HTTBma[13] = { 0, 10, 10, 8, 6, -3, -8, -8, -3, 3, 6, 8, 10 };
 
 #define   currentHTTB       HTTB[current_timer_hour]
 
