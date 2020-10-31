@@ -1452,7 +1452,8 @@ ComputeWantedState() {
     short wantP2on = 0;
     short wantVon = 0;
     short wantHon = 0;
-    short mid_buf = 0;
+    short bigChave = 0;
+    short bigCwant = 0;
     static char data[280];
 
     /* EVACUATED TUBES COLLECTOR: EXTREMES PROTECTIONS */
@@ -1527,132 +1528,59 @@ ComputeWantedState() {
     /* ELECTRICAL HEATER: BULK HEATING */
     if ( BoilerNeedsHeat() || wantHon ) {
         /* mark that we want the electrical heater on for deciding a bit later on */
-        mid_buf = 1;
+        bigCwant = 1;
         wantHon = 0;
     }
 
     /* Decide wheter to request heet pump heat or not */
-    if ((Tkotel < furnace_water_target) && cfg.use_acs)  mid_buf += 2;
-    sprintf( data, "compute: BoilerNeedsHeat()=%d; mid_buf=%d", BoilerNeedsHeat(), mid_buf );
-    /* mid_buf holds our desired ON things - lets figure out what can be done in reality */
-    if (mid_buf) {
-        switch (cfg.max_big_consumers) {
+    if ((Tkotel < furnace_water_target) && cfg.use_acs) bigCwant += 2;
+    /* Only try to activate Heat Pump HIGH mode if 2+ big consumers are allowed */
+    if ((bigCwant > 1)&&(cfg.max_big_consumers>1)) bigCwant += 4;
+    sprintf( data, "compute: BoilerNeedsHeat()=%d; bigCwant=%d", BoilerNeedsHeat(), bigCwant );
+    /* bigCwant holds our desired ON BIG things  */
+    if (CHeater) bigChave|=1;
+    if (CHP_low) bigChave|=2;
+    if (CHP_high) bigChave|=4;
+    switch (cfg.max_big_consumers) {
         default:
-        case 1: /* 1 BIG CONSUMER allowed */
-            /* mid_buff == 3   => does not work - want 3, but can have only 1 */
-            if (mid_buf == 3) {
-                sprintf( data + strlen(data), " 1-3 - turnig into");
-                mid_buf=1;
+        case 1: /* we can have only one big consumer */
+            switch (bigCwant) {
+                case 0: /* want all OFF */
+                    break;
+                case 1: /* want heater */
+                    break;
+                case >1: /* want HPL */
+                    /* check if heater is needed - if so, leave only it on the request */
+                    if (bigCwant&1) bigCwant = 1;
+                    break;
             }
-            if (mid_buf == 1) { /* only boiler needs electrical heater */
-                sprintf( data + strlen(data), " 1-1");
-                /* check if other big consumers have been off at least 1 minute */
-                if ((!CHP_low && (SCHP_low>5)) && (!CHP_high && (SCHP_high>5))) {
-                    /* and if we can turn heater ON */
-                    sprintf( data + strlen(data), " check");
-                    wantHon = 1;
-                    if (wantHon) sprintf( data + strlen(data), " OK!");
-                }
+            break;
+        case 2: /* TWO big consumers allowed */
+            switch (bigCwant) {
+                case 0: /* want all OFF */
+                    break;
+                case 1: /* want heater */
+                    break;
+                case 2: /* want HPL */
+                    break;
+                case 3: /* want heater + HPL */
+                    break;
+                case 6: /* want HPL + HPH */
+                    break;
+                case 7: /* want heater + HPL + HPH */
+                    /* need to cut back on the consumers here.. */
+                    bigCwant = 3;
+                    break;
             }
-            if (mid_buf == 2) { /* we would like to use heat pump services */
-                sprintf( data + strlen(data), " 1-2");
-                /* check if other big consumers have been off at least 1 cycle */
-                if ((!CHeater && (SCHeater)) && (!CHP_high && (SCHP_high))) {
-                    /* and if we can turn heater ON */
-                    sprintf( data + strlen(data), " check");
-                    StateDesired |= 32;
-                    if (StateDesired & 32) sprintf( data + strlen(data), " OK!");
-                }
-            }
-        break;
-        case 2: /* 2 BIG CONSUMERS allowed*/
-            if (mid_buf == 1) { /* heater only */
-                sprintf( data + strlen(data), " 2-1");
-                /* check if HP HIGH has been off and HP LOW - settled */
-                if ( (SCHP_low) && (!CHP_high && (SCHP_high))) {
-                    /* and if we can turn heater ON */
-                    sprintf( data + strlen(data), " check");
-                    wantHon = 1;
-                    if (wantHon) sprintf( data + strlen(data), " OK!");
-                }
-            }
-            if (mid_buf == 2) { /* heat pump only */
-                sprintf( data + strlen(data), " 2-2");
-                /* here we only need the heater to be off and settled */
-                if (!CHeater && (SCHeater) ) {
-                     /* verify rules following */
-                    sprintf( data + strlen(data), " check");
-                    StateDesired |= 96;
-                    if (StateDesired & 32) sprintf( data + strlen(data), " OK1!");
-                    if (StateDesired & 64) sprintf( data + strlen(data), " OK2!");
-                 }
-            }
-            if (mid_buf == 3) { /* heater + heat pump */
-                sprintf( data + strlen(data), " 2-3");
-                /* give boiler priority if possible - HP LOW HP HIGH needs to be off settled and HP HIGH - off */
-                if ((SCHP_low>2) && (!CHP_high && (SCHP_high))) {
-                    /* verify rules following */
-                    sprintf( data + strlen(data), " check1");
-                    wantHon = 1;
-                    if (wantHon) sprintf( data + strlen(data), " OK!");
-                }
-                /* for HP LOW - we can keep it on as long as it follows its rules */
-                StateDesired |= 32;
-                if (StateDesired & 32) sprintf( data + strlen(data), " OK1!");
-                /* for HP HIGH - boiler should not be needed and others should have settled */
-                if (!wantHon && SCHeater && (SCHP_low>2) && (!CHP_high && (SCHP_high))) {
-                    /* check if turning HP high follows its rules */
-                sprintf( data + strlen(data), " check3");
-                    StateDesired |= 64;
-                    if (StateDesired & 64) sprintf( data + strlen(data), " OK2!");
-                }
-            }
-        break;
-        case 3: /* 3 BIG CONSUMERS allowed*/
-            if (mid_buf == 1) { /* only boiler needs electrical heater */
-                sprintf( data + strlen(data), " 3-1");
-                /* avoid simultaneous switching */
-                if ((SCHP_low) && (SCHP_high>2)) {
-                    /* verify rules following */
-                    sprintf( data + strlen(data), " check1");
-                    wantHon = 1;
-                    if (wantHon) sprintf( data + strlen(data), " OK!");
-                }
-            }
-            if (mid_buf == 2) { /* we would like to use heat pump services */
-                sprintf( data + strlen(data), " 3-2");
-                /* avoid simultaneous switching */
-                if ( SCHeater && SCHP_low && (SCHP_high>5)) {
-                    /* verify rules following */
-                    sprintf( data + strlen(data), " check");
-                     StateDesired |= 96;
-                    if (StateDesired & 32) sprintf( data + strlen(data), " OK1!");
-                    if (StateDesired & 64) sprintf( data + strlen(data), " OK2!");
-                 }
-            }
-            if (mid_buf == 3) { /* we would like to use BOTH heat pump and heater */
-                sprintf( data + strlen(data), " 3-3");
-                /* avoid simultaneous switching */
-                if ((SCHP_low) && (SCHP_high>2)) {
-                    /* verify rules following */
-                    sprintf( data + strlen(data), " check1");
-                    wantHon = 1;
-                    if (wantHon) sprintf( data + strlen(data), " OK!");
-                }
-                /* avoid simultaneous switching */
-                if ( SCHeater && SCHP_low && (SCHP_high>5)) {
-                    /* verify rules following */
-                    sprintf( data + strlen(data), " check2");
-                     StateDesired |= 96;
-                    if (StateDesired & 32) sprintf( data + strlen(data), " OK1!");
-                    if (StateDesired & 64) sprintf( data + strlen(data), " OK2!");
-                 }
-            }
-        break;
-        }
-        /* after the swtich above - request pump 1 only if needed */
-        if ( StateDesired & 32 ) wantP1on = 1;
+            break;
+        case 3: /* 3 big consumers allowed - do what you want */
+            break;
     }
+    if (bigCwant&1) wantHon = 0;
+    if (bigCwant&2) StateDesired |= 32;
+    if (bigCwant&3) StateDesired |= 64;
+    /* after the swtich above - request pump 1 only if needed */
+    if ( StateDesired & 32 ) wantP1on = 1;
     
     log_message(DATA_FILE, data);
     
