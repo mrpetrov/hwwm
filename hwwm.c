@@ -1397,22 +1397,22 @@ unsigned short CanTurnHeaterOff() {
 }
 
 unsigned short CanTurnHeatPumpLowOn() {
-    if (!CHP_low && (COMMS==3) && CPump1 ) return 1;
+    if (!CHP_low && CPump1 && ((COMMS==1) || (COMMS==3))) return 1;
     else return 0;
 }
 
 unsigned short CanTurnHeatPumpLowOff() {
-    if (CHP_low && (COMMS==3))  return 1;
+    if (CHP_low && (COMMS>=2))  return 1;
     else return 0;
 }
 
 unsigned short CanTurnHeatPumpHighOn() {
-    if (!CHP_high && CHP_low && (COMMS==3) && CPump1) return 1;
+    if (!CHP_high && CHP_low && CPump1 && ((COMMS==1) || (COMMS==3))) return 1;
     else return 0;
 }
 
 unsigned short CanTurnHeatPumpHighOff() {
-    if (CHP_high && (COMMS==3))  return 1;
+    if (CHP_high && (COMMS>=2))  return 1;
     else return 0;
 }
 
@@ -1541,10 +1541,12 @@ ComputeWantedState() {
         switch (cfg.max_big_consumers) {
         default:
         case 1: /* 1 BIG CONSUMER allowed */
-            /* mid_buff == 3   => does not work - not enough power budget left */
+            /* mid_buff == 3   => does not work - want 3, but can have only 1 */
             if (mid_buf == 3) {
-                sprintf( data + strlen(data), " 1-3 - turnig into");
-                mid_buf=1;
+                if (COMMS>=2) { /* check if we can get rid of an AC */
+                    sprintf( data + strlen(data), " 1-3 - turnig into");
+                    mid_buf=1;
+                }
             }
             if (mid_buf == 1) { /* only boiler needs electrical heater */
                 sprintf( data + strlen(data), " 1-1");
@@ -1693,8 +1695,8 @@ ActivateDevicesState(const short _ST_) {
     if (_ST_ &   8)  {  if (CanTurnHeaterOn()) TurnHeaterOn(); }
     if (_ST_ &  16) { TurnHeaterOn(); }
     if ( !(_ST_ & 24) ) { if (CanTurnHeaterOff()) TurnHeaterOff(); }
-    if (_ST_ &  32)  { if (CanTurnHeatPumpLowOn()) TurnHeatPumpLowOn(); } else { if (CanTurnHeatPumpLowOff()) TurnHeatPumpLowOff(); }
     if (_ST_ &  64)  { if (CanTurnHeatPumpHighOn()) TurnHeatPumpHighOn(); } else { if (CanTurnHeatPumpHighOff()) TurnHeatPumpHighOff(); }
+    if (_ST_ &  32)  { if (CanTurnHeatPumpLowOn()) TurnHeatPumpLowOn(); } else { if (CanTurnHeatPumpLowOff()) TurnHeatPumpLowOff(); }
     
     SCPump1++;
     SCPump2++;
