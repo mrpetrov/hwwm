@@ -1396,22 +1396,23 @@ unsigned short CanTurnHeaterOff() {
 }
 
 unsigned short CanTurnHeatPumpLowOn() {
-    if (!CHP_low && CPump1 && ((COMMS==1) || (COMMS==3))) return 1;
+    if (!CHP_low && CPump1 && (SCHeater > 2) && ((COMMS==1) || (COMMS==3))) return 1;
     else return 0;
 }
 
 unsigned short CanTurnHeatPumpLowOff() {
-    if (CHP_low && (COMMS>=2) && !CHP_high && (SCHP_high>1) )  return 1;
+    if (CHP_low && !CHP_high && (SCHP_high>1) && (COMMS>=2))  return 1;
     else return 0;
 }
 
 unsigned short CanTurnHeatPumpHighOn() {
-    if (!CHP_high && CHP_low && CPump1 && ((COMMS==1) || (COMMS==3))) return 1;
+    if (!CHP_high && CHP_low && (SCHP_low>2) && (SCHeater > 2) && 
+        ((COMMS==1) || (COMMS==3))) return 1;
     else return 0;
 }
 
 unsigned short CanTurnHeatPumpHighOff() {
-    if (CHP_high && (COMMS>=2) && CHP_low && (SCHP_low>1) )  return 1;
+    if (CHP_high && CHP_low && (SCHP_low>2) && (COMMS>=2))  return 1;
     else return 0;
 }
 
