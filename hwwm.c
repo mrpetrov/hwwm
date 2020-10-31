@@ -1473,10 +1473,8 @@ ComputeWantedState() {
 	if (Tkotel > 38) { wantP1on = 1; }
 	else {
 		/* below 38 C - check if it is cold to see if we need to run furnace pump:
-            if so - run furnace pump at least once every 10 minutes
-            we check if it is cold by looking at solar pump idle state - in the cold (-10C)
-            it runs at least once per 2 hours; so double that ;) */
-		if ((Tenv < 8)&&(SCPump2 < (6*60*4))&&(!CPump1)&&(SCPump1 > (6*10))) wantP1on = 1;
+            if so - run furnace pump at least once every 10 minutes */
+		if ((Tenv < 3)&&(!CPump1)&&(SCPump1 > (10*6))) wantP1on = 1;
 	}
     /* Furnace is above 20 C and rising slowly - turn pump on */
     if ((Tkotel > 20)&&(Tkotel > (TkotelPrev+0.12))) wantP1on = 1;
@@ -1543,10 +1541,8 @@ ComputeWantedState() {
         case 1: /* 1 BIG CONSUMER allowed */
             /* mid_buff == 3   => does not work - want 3, but can have only 1 */
             if (mid_buf == 3) {
-                if (COMMS>=2) { /* check if we can get rid of an AC */
-                    sprintf( data + strlen(data), " 1-3 - turnig into");
-                    mid_buf=1;
-                }
+                sprintf( data + strlen(data), " 1-3 - turnig into");
+                mid_buf=1;
             }
             if (mid_buf == 1) { /* only boiler needs electrical heater */
                 sprintf( data + strlen(data), " 1-1");
