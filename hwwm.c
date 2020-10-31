@@ -1265,28 +1265,50 @@ GetCurrentTime() {
 void
 LogData(short HM) {
     static char data[280];
-    /* Log data like so:
-        Time(by log function) HOUR, TKOTEL,TSOLAR,TBOILERL,TBOILERH,TENV, BOILERTEMPWANTED,BOILERABSMAX,
-    furnace_water_target,NIGHTBOOST, WATTSUSED,WATTSUSEDNIGHTTARIFF PUMP1,PUMP2,VALVE,EL_HEATER,POWERBYBATTERY,  */
-    sprintf( data, "%2d, %6.3f,%6.3f,%6.3f,%6.3f,%6.3f, %2d,%2d,%4.1f,%d, %5.3f,%5.3f, WANTED:",\
+    unsigned short diff=0;
+    unsigned short RS=0; /* real state */
+    if (CPump1) RS|=1;
+    if (CPump2) RS|=2;
+    if (CValve) RS|=4;
+    if (CHeater) RS|=8;
+    if (CHP_low) RS|=32;
+    if (CHP_high) RS|=64;
+    diff = (HM ^ RS);
+
+    sprintf( data, "%2d,  %6.3f,%6.3f,%6.3f,%6.3f,%6.3f  %2d,%2d,%d,%4.1f",\
     current_timer_hour, Tkotel, Tkolektor, TboilerLow, TboilerHigh, Tenv, cfg.wanted_T, cfg.abs_max, \
-    furnace_water_target, cfg.night_boost, TotalPowerUsed, NightlyPowerUsed );
-    if ((HM&1)==1) sprintf( data + strlen(data), " P1");
-    if ((HM&2)==2) sprintf( data + strlen(data), " P2");
-    if ((HM&4)==4) sprintf( data + strlen(data), " V");
-    if ((HM&8)==8) sprintf( data + strlen(data), " H");
-    if ((HM&16)==16) sprintf( data + strlen(data), " Hf");
-    if ((HM&32)==32) sprintf( data + strlen(data), " HP1");
-    if ((HM&64)==64) sprintf( data + strlen(data), " HP2");
-    sprintf( data + strlen(data), "; GOT:");
-    if (CPump1) sprintf( data + strlen(data), " P1");
-    if (CPump2) sprintf( data + strlen(data), " P2");
-    if (CValve) sprintf( data + strlen(data), " V");
-    if (CHeater) sprintf( data + strlen(data), " H");
-    if (CHP_low) sprintf( data + strlen(data), " HP1");
-    if (CHP_high) sprintf( data + strlen(data), " HP2");
-    if (CPowerByBattery) sprintf( data + strlen(data), " UPS");
-    sprintf( data + strlen(data), "; sendBits:%d COMMS:%d ", sendBits, COMMS);
+    cfg.night_boost, furnace_water_target );
+    if (HM) {
+        sprintf( data + strlen(data), "  WANTED:");
+        if (HM&1) sprintf( data + strlen(data), " P1");
+        if (HM&2) sprintf( data + strlen(data), " P2");
+        if (HM&4) sprintf( data + strlen(data), " V");
+        if (HM&8) sprintf( data + strlen(data), " H");
+        if (HM&16) sprintf( data + strlen(data), " *Hf*");
+        if (HM&32) sprintf( data + strlen(data), " HP1");
+        if (HM&64) sprintf( data + strlen(data), " HP2");
+    }
+    if (RS) {
+        sprintf( data + strlen(data), " got:");
+        if (CPump1) sprintf( data + strlen(data), " P1");
+        if (CPump2) sprintf( data + strlen(data), " P2");
+        if (CValve) sprintf( data + strlen(data), " V");
+        if (CHeater) sprintf( data + strlen(data), " H");
+        if (CHP_low) sprintf( data + strlen(data), " HP1");
+        if (CHP_high) sprintf( data + strlen(data), " HP2");
+    }
+    if (diff) {
+        sprintf( data + strlen(data), " MISSING:");
+        if (diff&1) sprintf( data + strlen(data), " P1");
+        if (diff&2) sprintf( data + strlen(data), " P2");
+        if (diff&4) sprintf( data + strlen(data), " V");
+        if (diff&8) sprintf( data + strlen(data), " H");
+        if (diff&32) sprintf( data + strlen(data), " HP1");
+        if (diff&64) sprintf( data + strlen(data), " HP2");
+    }
+    else sprintf( data + strlen(data), "    OK!  ");
+    if (CPowerByBattery) sprintf( data + strlen(data), " *UPS*");
+    sprintf( data + strlen(data), " sendBits:%d COMMS:%d", sendBits, COMMS);
     log_message(DATA_FILE, data);
 
     /* for the first 2 cycles = 20 seconds - do not create or update the files that go out to
