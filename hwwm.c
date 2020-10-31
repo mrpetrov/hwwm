@@ -1455,6 +1455,8 @@ ComputeWantedState() {
     short bigChave = 0;
     short bigCwant = 0;
     static char data[280];
+    
+    if (!CanTurnPump1Off())) wantP1on = 1;
 
     /* EVACUATED TUBES COLLECTOR: EXTREMES PROTECTIONS */
     /* If collector is below 7 C and its getting cold -	turn pump on to prevent freezing */
@@ -1536,7 +1538,7 @@ ComputeWantedState() {
     if ((Tkotel < furnace_water_target) && cfg.use_acs) bigCwant += 2;
     /* Only try to activate Heat Pump HIGH mode if 2+ big consumers are allowed */
     if ((bigCwant > 1)&&(cfg.max_big_consumers>1)) bigCwant += 4;
-    sprintf( data, "compute: BoilerNeedsHeat()=%d; bigCwant=%d", BoilerNeedsHeat(), bigCwant );
+    sprintf( data, "compute: BoilerNeedsHeat()=%d; bigCwant=%d ", BoilerNeedsHeat(), bigCwant );
     /* bigCwant holds our desired ON BIG things  */
     if (CHeater) bigChave|=1;
     if (CHP_low) bigChave|=2;
@@ -1570,13 +1572,15 @@ ComputeWantedState() {
                 case 7: /* want heater + HPL + HPH */
                     /* need to cut back on the consumers here.. */
                     bigCwant = 3;
+                    sprintf( data, " --> cutting back " );
                     break;
             }
             break;
         case 3: /* 3 big consumers allowed - do what you want */
             break;
     }
-    if (bigCwant&1) wantHon = 0;
+    sprintf( data, "   final bigCwant=%d", bigCwant );
+    if (bigCwant&1) wantHon = 1;
     if (bigCwant&2) StateDesired |= 32;
     if (bigCwant&3) StateDesired |= 64;
     /* after the swtich above - request pump 1 only if needed */
