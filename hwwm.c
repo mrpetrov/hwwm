@@ -1456,7 +1456,7 @@ ComputeWantedState() {
     short bigCwant = 0;
     static char data[280];
     
-    if (!CanTurnPump1Off())) wantP1on = 1;
+    if (!CanTurnPump1Off()) wantP1on = 1;
 
     /* EVACUATED TUBES COLLECTOR: EXTREMES PROTECTIONS */
     /* If collector is below 7 C and its getting cold -	turn pump on to prevent freezing */
