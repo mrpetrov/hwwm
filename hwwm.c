@@ -1572,14 +1572,14 @@ ComputeWantedState() {
                 case 7: /* want heater + HPL + HPH */
                     /* need to cut back on the consumers here.. */
                     bigCwant = 3;
-                    sprintf( data, " --> cutting back " );
+                    sprintf( data + strlen(data), " --> cutting back " );
                     break;
             }
             break;
         case 3: /* 3 big consumers allowed - do what you want */
             break;
     }
-    sprintf( data, "   final bigCwant=%d", bigCwant );
+    sprintf( data + strlen(data), "   final bigCwant=%d", bigCwant );
     if (bigCwant&1) wantHon = 1;
     if (bigCwant&2) StateDesired |= 32;
     if (bigCwant&3) StateDesired |= 64;
