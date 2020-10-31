@@ -1373,20 +1373,19 @@ unsigned short CanTurnValveOff() {
 }
 
 unsigned short CanTurnHeaterOn() {
-    unsigned short i = 0;
-    if (!CHeater && (SCHeater > 29)) { i=1; } else return 0;
+    if (CHeater || (SCHeater < 29) || (SCHP_low<2) || (SCHP_high<2)) return 0;
     /* Do the check with config to see if its OK to use electric heater,
     for example: if its on "night tariff" - switch it on */
     /* Determine current time: */
     if ( (current_timer_hour <= NEstop) || (current_timer_hour >= NEstart) ) {
             /* NIGHT TARIFF TIME */
             /* If heater use is allowed by config - turn it on */
-            if (cfg.use_electric_heater_night) return i;
+            if (cfg.use_electric_heater_night) return 1;
     }
     else {
             /* DAY TIME */
             /* If heater use is allowed by config - turn it on */
-            if (cfg.use_electric_heater_day) return i;
+            if (cfg.use_electric_heater_day) return 1;
     }
     return 0;
 }
@@ -1402,7 +1401,7 @@ unsigned short CanTurnHeatPumpLowOn() {
 }
 
 unsigned short CanTurnHeatPumpLowOff() {
-    if (CHP_low && (COMMS>=2))  return 1;
+    if (CHP_low && (COMMS>=2) && !CHP_high && (SCHP_high>1) )  return 1;
     else return 0;
 }
 
@@ -1412,7 +1411,7 @@ unsigned short CanTurnHeatPumpHighOn() {
 }
 
 unsigned short CanTurnHeatPumpHighOff() {
-    if (CHP_high && (COMMS>=2))  return 1;
+    if (CHP_high && (COMMS>=2) && CHP_low && (SCHP_low>1) )  return 1;
     else return 0;
 }
 
@@ -1623,8 +1622,8 @@ ActivateDevicesState(const short _ST_) {
     if (_ST_ &   8)  {  if (CanTurnHeaterOn()) TurnHeaterOn(); }
     if (_ST_ &  16) { TurnHeaterOn(); }
     if ( !(_ST_ & 24) ) { if (CanTurnHeaterOff()) TurnHeaterOff(); }
-    if (_ST_ &  64)  { if (CanTurnHeatPumpHighOn()) TurnHeatPumpHighOn(); } else { if (CanTurnHeatPumpHighOff()) TurnHeatPumpHighOff(); }
     if (_ST_ &  32)  { if (CanTurnHeatPumpLowOn()) TurnHeatPumpLowOn(); } else { if (CanTurnHeatPumpLowOff()) TurnHeatPumpLowOff(); }
+    if (_ST_ &  64)  { if (CanTurnHeatPumpHighOn()) TurnHeatPumpHighOn(); } else { if (CanTurnHeatPumpHighOff()) TurnHeatPumpHighOff(); }
     
     SCPump1++;
     SCPump2++;
