@@ -1471,8 +1471,6 @@ ComputeWantedState() {
        cannot be turned OFF */
     StateMinimum = (~StateMinimum)&111;
     
-    if (!CanTurnPump1Off()) wantP1on = 1;
-
     /* EVACUATED TUBES COLLECTOR: EXTREMES PROTECTIONS */
     /* If collector is below 7 C and its getting cold -	turn pump on to prevent freezing */
 	if ((Tkolektor < 7)&&(Tenv < 3)) wantP2on = 1;
