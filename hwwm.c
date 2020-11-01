@@ -1396,7 +1396,7 @@ unsigned short CanTurnHeaterOff() {
 }
 
 unsigned short CanTurnHeatPumpLowOn() {
-    if (!CHP_low && CPump1 && (SCHeater > 2) && ((COMMS==1) || (COMMS==3))) return 1;
+    if (!CHP_low && (SCHeater > 2) && ((COMMS==1) || (COMMS==3))) return 1;
     else return 0;
 }
 
