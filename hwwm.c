@@ -1592,17 +1592,18 @@ ComputeWantedState() {
         case 3: /* 3 big consumers allowed - do what you want */
             break;
     }
-    sprintf( data + strlen(data), " inter bCw=%d", bigCwant );
+    sprintf( data + strlen(data), " interbCw=%d", bigCwant );
     if (bigCwant&1) wantHon = 1;
     if (bigCwant&2) StateDesired |= 32;
     if (bigCwant&3) StateDesired |= 64;
     /* after the swtich above - request pump 1 only if needed */
     if (StateDesired&32) wantP1on = 1;
-    sprintf( data + strlen(data), " inter SD=%d", StateDesired );
+    sprintf( data + strlen(data), " interSD=%d", StateDesired );
     /* do final correction - do an OR with the minimum state possible 
         this will keep ON devices which cannot be turned OFF */
     StateDesired |= StateMinimum;
-    sprintf( data + strlen(data), " final SD=%d", StateDesired );
+    sprintf( data + strlen(data), "    min=%d", StateMinimum );
+    sprintf( data + strlen(data), "  finalSD=%d", StateDesired );
     
     log_message(DATA_FILE, data);
     
