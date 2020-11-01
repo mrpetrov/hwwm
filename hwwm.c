@@ -1453,8 +1453,8 @@ ComputeWantedState() {
     unsigned short wantP2on = 0;
     unsigned short wantVon = 0;
     unsigned short wantHon = 0;
-    unsigned short bigChave = 0;
-    unsigned short bigCwant = 0;
+    unsigned short wantHPLon = 0;
+    unsigned short wantHPHon = 0;
     static char data[280];
     
     /* try to calculate what would be the lowest possible state right now */
@@ -1544,65 +1544,30 @@ ComputeWantedState() {
 
     /* ELECTRICAL HEATER: BULK HEATING */
     if ( BoilerNeedsHeat() || wantHon ) {
-        /* mark that we want the electrical heater on for deciding a bit later on */
-        bigCwant = 1;
-        wantHon = 0;
+        wantHon = 1;
     }
 
-    /* Decide wheter to request heet pump heat or not */
-    if ((Tkotel < furnace_water_target) && cfg.use_acs) bigCwant += 2;
-    /* Only try to activate Heat Pump HIGH mode if 2+ big consumers are allowed */
-    if ((bigCwant > 1)&&(cfg.max_big_consumers>1)) bigCwant += 4;
-    sprintf( data, "compute: BNH()=%d; bCw=%d", BoilerNeedsHeat(), bigCwant );
-    /* bigCwant holds our desired ON BIG things  */
-    if (CHeater) bigChave|=1;
-    if (CHP_low) bigChave|=2;
-    if (CHP_high) bigChave|=4;
-    switch (cfg.max_big_consumers) {
-        default:
-        case 1: /* we can have only one big consumer */
-            switch (bigCwant) {
-                case 0: /* want all OFF */
-                    break;
-                case 1: /* want heater */
-                    break;
-                case 2 ... 7: /* want HPL */
-                    sprintf( data + strlen(data), " C1" );
-                    /* check if heater is needed - if so, leave only it on the request */
-                    if (bigCwant&1) bigCwant = 1;
-                    break;
-            }
-            break;
-        case 2: /* TWO big consumers allowed */
-            switch (bigCwant) {
-                case 0: /* want all OFF */
-                    break;
-                case 1: /* want heater */
-                    break;
-                case 2: /* want HPL */
-                    break;
-                case 3: /* want heater + HPL */
-                    break;
-                case 6: /* want HPL + HPH */
-                    break;
-                case 7: /* want heater + HPL + HPH */
-                    /* need to cut back on the consumers here; first to fall would be HPH,
-                        check if it is OFF OR can become OFF */
-                    sprintf( data + strlen(data), " C2" );
-                    bigCwant = 3;
-                    break;
-            }
-            break;
-        case 3: /* 3 big consumers allowed - do what you want */
-            break;
-    }
-    sprintf( data + strlen(data), " interbCw=%d", bigCwant );
-    if (bigCwant&1) wantHon = 1;
-    if (bigCwant&2) StateDesired |= 32;
-    if (bigCwant&3) StateDesired |= 64;
+    /* Decide whether to request heat pump ON or not */
+    if ((Tkotel < furnace_water_target) && cfg.use_acs) wantHPLon = 1;
+    /* Only try to activate Heat Pump HIGH mode if 2+ big consumers are allowed 
+        and heater can be switched OFF */
+    if (wantHPLon&&(cfg.max_big_consumers>1)&&(!(StateMinimum&8))) wantHPHon = 1;
+    sprintf( data, "compute: BNH()=%d; ", BoilerNeedsHeat() );
+    
+    sprintf( data + strlen(data), " wantHon=%d", wantHon );
+    sprintf( data + strlen(data), " wantHPLon=%d", wantHPLon );
+    sprintf( data + strlen(data), " wantHPHon=%d", wantHPHon );
     /* after the swtich above - request pump 1 only if needed */
-    if (StateDesired&32) wantP1on = 1;
-    sprintf( data + strlen(data), " interSD=%d", StateDesired );
+    if (wantHPLon) wantP1on = 1;
+    
+    if ( wantP1on ) StateDesired |= 1;
+    if ( wantP2on ) StateDesired |= 2;
+    if ( wantVon )  StateDesired |= 4;
+    if ( wantHon )  StateDesired |= 8;
+    if ( wantHPLon )  StateDesired |= 32;
+    if ( wantHPHon )  StateDesired |= 64;
+
+    sprintf( data + strlen(data), " uncorrSD=%d", StateDesired );
     /* do final correction - do an OR with the minimum state possible 
         this will keep ON devices which cannot be turned OFF */
     StateDesired |= StateMinimum;
@@ -1610,11 +1575,6 @@ ComputeWantedState() {
     sprintf( data + strlen(data), "  finalSD=%d", StateDesired );
     
     log_message(DATA_FILE, data);
-    
-    if ( wantP1on ) StateDesired |= 1;
-    if ( wantP2on ) StateDesired |= 2;
-    if ( wantVon )  StateDesired |= 4;
-    if ( wantHon )  StateDesired |= 8;
 
     return StateDesired;
 }
