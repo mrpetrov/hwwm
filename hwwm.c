@@ -1557,14 +1557,17 @@ ComputeWantedState() {
         } else if (cfg.max_big_consumers==2) { /* 2 big consumers */
         sprintf( data + strlen(data), " h-2-1");
             /* when 2 big consumers allowed - we need to make sure HPH is either OFF or can be switched OFF */
-            if (!CHP_high || (CanTurnHeatPumpHighOff())) {
+            if (!(StateMinimum&32)) {
         sprintf( data + strlen(data), " h-2-2");
                 wantHon = 1;
             }
         } else {            /* 1 big consumers */
         sprintf( data + strlen(data), " h-3-1");
-            /* if the other big consumers can be OFF - try heater ON */
+            /* if the other big consumers can be OFF and heater ON - try it */
+            if (!(StateMinimum&(32+64)) && (CanTurnHeaterOn() || CHeater)) {
+        sprintf( data + strlen(data), " h-3-2");
                 wantHon = 1;
+            }
         }
     }
 
@@ -1587,9 +1590,14 @@ ComputeWantedState() {
         } else { /* 1 big consumer allowed */
         sprintf( data + strlen(data), " L-2-1");
             /* check if heater is is OFF, been so for a while, and not needed */
-            if (!wantHon && !CHeater && (SCHeater > 2)) /* and heater is off and has been like this 30 seconds */
+            if (!wantHon && !CHeater && (SCHeater > 2)) {
         sprintf( data + strlen(data), " L-2-2");
-                wantHPLon = 1;
+                /* also chech that HPL can be turned or has been ON */
+                if (CanTurnHeatPumpLowOn() || CHP_low) { 
+        sprintf( data + strlen(data), " L-2-3");
+                    wantHPLon = 1;
+                }
+            }
         }
     /* HEAT PUMP HIGH  */
     /* Decide whether to request heat pump LOW ON or not */
