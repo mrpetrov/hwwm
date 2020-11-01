@@ -1559,8 +1559,10 @@ ComputeWantedState() {
         } else if (cfg.max_big_consumers==2) { /* 2 big consumers */
         sprintf( data + strlen(data), " htr-2-1");
             /* when 2 big consumers allowed - we need to make sure HPH is either OFF or can be switched OFF */
+            if (!CHP_high || CanTurnHeatPumpHighOff()) {
         sprintf( data + strlen(data), " htr-2-2");
                 wantHon = 1;
+            }
         } else {            /* 1 big consumers */
         sprintf( data + strlen(data), " htr-3-1");
             /* if the other big consumers can be OFF and heater ON - try it */
