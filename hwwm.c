@@ -1577,7 +1577,7 @@ ComputeWantedState() {
             wantHPHon = 1;
         } else if (cfg.max_big_consumers==2) { /* else - if 2 big consumers */
         sprintf( data + strlen(data), " H-2-1");
-            if (wantHPLon && CanTurnHeatPumpHighOn()) {/* and low mode is on + high can be turned on */
+            if (CHP_low && CanTurnHeatPumpHighOn()) {/* and low mode is on + high can be turned on */
         sprintf( data + strlen(data), " H-2-2");
                 if ((!CHeater) && (SCHeater > 2)) { /* and heater is off and has been like this 30 seconds */
         sprintf( data + strlen(data), " H-2-3");
