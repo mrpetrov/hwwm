@@ -1447,18 +1447,18 @@ BoilerNeedsHeat() {
 
 short
 ComputeWantedState() {
-    short StateDesired = 0;
-    short StateMinimum = 0;
-    short wantP1on = 0;
-    short wantP2on = 0;
-    short wantVon = 0;
-    short wantHon = 0;
-    short bigChave = 0;
-    short bigCwant = 0;
+    unsigned short StateDesired = 0;
+    unsigned short StateMinimum = 0;
+    unsigned short wantP1on = 0;
+    unsigned short wantP2on = 0;
+    unsigned short wantVon = 0;
+    unsigned short wantHon = 0;
+    unsigned short bigChave = 0;
+    unsigned short bigCwant = 0;
     static char data[280];
     
     /* try to calculate what would be the lowest possible state right now */
-    /* e.g. if Pump 1 can be turned OFF or is already OFF */
+    /* e.g. if Pump 1 can be turned OFF or is already OFF - toggle its bit */
     if (CanTurnPump1Off() || !CPump1) StateMinimum |= 1;
     if (CanTurnPump2Off() || !CPump2) StateMinimum |= 2;
     if (CanTurnValveOff() || !CValve) StateMinimum |= 4;
@@ -1466,6 +1466,9 @@ ComputeWantedState() {
     /* NB here! Bit 5 == 16 is used to make Heater ON forcefully - so no |= 16 */
     if (CanTurnHeatPumpLowOff() || !CHP_low) StateMinimum |= 32;
     if (CanTurnHeatPumpHighOff() || !CHP_high) StateMinimum |= 64;
+    /* after we have all the bits, we need to invert them - this will leave ON the bits
+    for the devices which cannot be turned OFF */
+    StateMinimum = ~StateMinimum;
     
     if (!CanTurnPump1Off()) wantP1on = 1;
 
