@@ -1546,6 +1546,7 @@ ComputeWantedState() {
     /* ELECTRICAL HEATER: BULK HEATING */
     if ( BoilerNeedsHeat() || wantHon ) {
         sprintf( data + strlen(data), " heater");
+        if (CanTurnHeaterOn()) sprintf( data + strlen(data), " CTHO");
         /* before enabling heater blindly - consider max big consumers */
         if (cfg.max_big_consumers>=3) {
         sprintf( data + strlen(data), " htr-1-1");
@@ -1557,14 +1558,12 @@ ComputeWantedState() {
         } else if (cfg.max_big_consumers==2) { /* 2 big consumers */
         sprintf( data + strlen(data), " htr-2-1");
             /* when 2 big consumers allowed - we need to make sure HPH is either OFF or can be switched OFF */
-            if (!(StateMinimum&32)) {
         sprintf( data + strlen(data), " htr-2-2");
                 wantHon = 1;
-            }
         } else {            /* 1 big consumers */
         sprintf( data + strlen(data), " htr-3-1");
             /* if the other big consumers can be OFF and heater ON - try it */
-            if (!(StateMinimum&(32+64)) && (CanTurnHeaterOn() || CHeater)) {
+            if (CanTurnHeaterOn() || CHeater) {
         sprintf( data + strlen(data), " htr-3-2");
                 wantHon = 1;
             }
@@ -1575,6 +1574,7 @@ ComputeWantedState() {
     /* Check: if we need to heat furnace water and ACs are allowed */
     if ((Tkotel < furnace_water_target) && cfg.use_acs) {
         sprintf( data + strlen(data), " HP");
+        if (CanTurnHeatPumpLowOn()) sprintf( data + strlen(data), " CTHPLO");
     /* HEAT PUMP LOW  */
     /* Decide whether to request heat pump LOW ON or not */
         if (cfg.max_big_consumers>=2) { /* if 2+ big consumers */
@@ -1599,6 +1599,7 @@ ComputeWantedState() {
                 }
             }
         }
+        if (CanTurnHeatPumpHighOn()) sprintf( data + strlen(data), " CTHPHO");
     /* HEAT PUMP HIGH  */
     /* Decide whether to request heat pump LOW ON or not */
         if (cfg.max_big_consumers>=3) { /* if 3+ big consumers allowe - just go ahead */
