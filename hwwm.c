@@ -1412,7 +1412,7 @@ unsigned short CanTurnHeatPumpHighOn() {
 }
 
 unsigned short CanTurnHeatPumpHighOff() {
-    if (CHP_high && CHP_low && (SCHP_low>2) && (COMMS>=2))  return 1;
+    if (CHP_high && (COMMS>=2))  return 1;
     else return 0;
 }
 
