@@ -1548,24 +1548,24 @@ ComputeWantedState() {
         sprintf( data + strlen(data), " heater");
         /* before enabling heater blindly - consider max big consumers */
         if (cfg.max_big_consumers>=3) {
-        sprintf( data + strlen(data), " h-1-1");
+        sprintf( data + strlen(data), " htr-1-1");
             /* when 3+ are allowed - we can turn heater ON if possible */
             if (CanTurnHeaterOn()) {
-        sprintf( data + strlen(data), " h-1-2");
+        sprintf( data + strlen(data), " htr-1-2");
                 wantHon = 1;
             }
         } else if (cfg.max_big_consumers==2) { /* 2 big consumers */
-        sprintf( data + strlen(data), " h-2-1");
+        sprintf( data + strlen(data), " htr-2-1");
             /* when 2 big consumers allowed - we need to make sure HPH is either OFF or can be switched OFF */
             if (!(StateMinimum&32)) {
-        sprintf( data + strlen(data), " h-2-2");
+        sprintf( data + strlen(data), " htr-2-2");
                 wantHon = 1;
             }
         } else {            /* 1 big consumers */
-        sprintf( data + strlen(data), " h-3-1");
+        sprintf( data + strlen(data), " htr-3-1");
             /* if the other big consumers can be OFF and heater ON - try it */
             if (!(StateMinimum&(32+64)) && (CanTurnHeaterOn() || CHeater)) {
-        sprintf( data + strlen(data), " h-3-2");
+        sprintf( data + strlen(data), " htr-3-2");
                 wantHon = 1;
             }
         }
