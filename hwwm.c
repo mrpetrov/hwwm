@@ -1466,9 +1466,10 @@ ComputeWantedState() {
     /* NB here! Bit 5 == 16 is used to make Heater ON forcefully - so no |= 16 */
     if (CanTurnHeatPumpLowOff() || !CHP_low) StateMinimum |= 32;
     if (CanTurnHeatPumpHighOff() || !CHP_high) StateMinimum |= 64;
-    /* after we have all the bits, we need to invert them - this will leave ON the bits
-    for the devices which cannot be turned OFF */
-    StateMinimum = ~StateMinimum;
+    /* after we have all the bits, we need to invert them, and bitwise AND with the max
+       possible (1+2+4+8+32+64 == 111) - this will leave ON the bits for the devices which
+       cannot be turned OFF */
+    StateMinimum = (~StateMinimum)&111;
     
     if (!CanTurnPump1Off()) wantP1on = 1;
 
