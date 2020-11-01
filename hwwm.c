@@ -1540,12 +1540,33 @@ ComputeWantedState() {
         if ((TboilerLow < nightEnergyTemp) && CanTurnHeaterOn()) { wantHon = 1; }
     }
 
-    /* ELECTRICAL HEATER: BULK HEATING */
-    if ( BoilerNeedsHeat() || wantHon ) {
-        wantHon = 1;
-    }
     sprintf( data, "compute: " );
     if ( BoilerNeedsHeat() ) sprintf( data + strlen(data), " BNH");
+
+    /* ELECTRICAL HEATER: BULK HEATING */
+    if ( BoilerNeedsHeat() || wantHon ) {
+        sprintf( data + strlen(data), " heater");
+        /* before enabling heater blindly - consider max big consumers */
+        if (cfg.max_big_consumers>=3) {
+        sprintf( data + strlen(data), " h-1-1");
+            /* when 3+ are allowed - we can turn heater ON if possible */
+            if (CanTurnHeaterOn()) {
+        sprintf( data + strlen(data), " h-1-2");
+                wantHon = 1;
+            }
+        } else if (cfg.max_big_consumers==2) { /* 2 big consumers */
+        sprintf( data + strlen(data), " h-2-1");
+            /* when 2 big consumers allowed - we need to make sure HPH is either OFF or can be switched OFF */
+            if (!CHP_high || (CanTurnHeatPumpHighOff())) {
+        sprintf( data + strlen(data), " h-2-2");
+                wantHon = 1;
+            }
+        } else {            /* 1 big consumers */
+        sprintf( data + strlen(data), " h-3-1");
+            /* if the other big consumers can be OFF - try heater ON */
+                wantHon = 1;
+        }
+    }
 
     /* FURNACE WATER HEATING BY HEAT PUMP */
     /* Check: if we need to heat furnace water and ACs are allowed */
@@ -1579,7 +1600,7 @@ ComputeWantedState() {
         sprintf( data + strlen(data), " H-2-1");
             if (CHP_low && CanTurnHeatPumpHighOn()) {/* and low mode is on + high can be turned on */
         sprintf( data + strlen(data), " H-2-2");
-                if ((!CHeater) && (SCHeater > 2)) { /* and heater is off and has been like this 30 seconds */
+                if (!wantHon && (!CHeater) && (SCHeater > 2)) { /* and heater is off and has been like this 30 seconds and not needed */
         sprintf( data + strlen(data), " H-2-3");
                     wantHPHon = 1;
                 }
