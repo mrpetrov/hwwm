@@ -1547,16 +1547,38 @@ ComputeWantedState() {
         wantHon = 1;
     }
 
-    /* Decide whether to request heat pump ON or not */
-    if ((Tkotel < furnace_water_target) && cfg.use_acs) wantHPLon = 1;
-    /* Only try to activate Heat Pump HIGH mode if 2+ big consumers are allowed 
-        and heater can be switched OFF */
-    if (wantHPLon&&(cfg.max_big_consumers>1)&&(!(StateMinimum&8))) wantHPHon = 1;
+    /* FURNACE WATER HEATING BY HEAT PUMP */
+    /* Check: if we need to heat furnace water and ACs are allowed */
+    if ((Tkotel < furnace_water_target) && cfg.use_acs) {
+    /* HEAT PUMP LOW  */
+    /* Decide whether to request heat pump LOW ON or not */
+        if (cfg.max_big_consumers>=2) { /* if 2+ big consumers */
+            /* check if HPL can be turned ON at all */
+            if (CanTurnHeatPumpLowOn())
+                if ((!CHeater) && (SCHeater > 2)) /* and heater is off and has been like this 30 seconds */
+                    wantHPLon = 1;
+        } else { /* 1 big consumer allowed */
+            /* check if heater is is OFF, been so for a while, and not needed */
+            if (!wantHon && !CHeater && (SCHeater > 2)) /* and heater is off and has been like this 30 seconds */
+                wantHPLon = 1;
+        }
+    /* HEAT PUMP HIGH  */
+    /* Decide whether to request heat pump LOW ON or not */
+        if (cfg.max_big_consumers>=3) { /* if 3+ big consumers allowe - just go ahead */
+            wantHPHon = 1;
+        } else if (cfg.max_big_consumers==2) { /* else - if 2 big consumers */
+            if (wantHPLon && CanTurnHeatPumpHighOn()) /* and low mode is on + high can be turned on */
+                if ((!CHeater) && (SCHeater > 2)) /* and heater is off and has been like this 30 seconds */
+                    wantHPHon = 1;
+        }
+    }
+
     sprintf( data, "compute: BNH()=%d; ", BoilerNeedsHeat() );
     
-    sprintf( data + strlen(data), " wantHon=%d", wantHon );
-    sprintf( data + strlen(data), " wantHPLon=%d", wantHPLon );
-    sprintf( data + strlen(data), " wantHPHon=%d", wantHPHon );
+    if ( wantHon ) sprintf( data + strlen(data), " wantH");
+    if ( wantHPLon ) sprintf( data + strlen(data), " wantHPL" );
+    if ( wantHPHon ) sprintf( data + strlen(data), " wantHPH" );
+    
     /* after the swtich above - request pump 1 only if needed */
     if (wantHPLon) wantP1on = 1;
     
