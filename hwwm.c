@@ -1576,8 +1576,8 @@ ComputeWantedState() {
     /* Decide whether to request heat pump LOW ON or not */
         if (cfg.max_big_consumers>=2) { /* if 2+ big consumers */
         sprintf( data + strlen(data), " L-1-1");
-            /* check if HPL can be turned ON at all */
-            if (CanTurnHeatPumpLowOn()) {
+            /* check if HPL can be turned ON or has been ON */
+            if (CanTurnHeatPumpLowOn() || CHP_low) {
         sprintf( data + strlen(data), " L-1-2");
                 if ((!CHeater) && (SCHeater > 2)) { /* and heater is off and has been like this 30 seconds */
         sprintf( data + strlen(data), " L-1-3");
