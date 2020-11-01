@@ -1582,7 +1582,7 @@ ComputeWantedState() {
             /* check if HPL can be turned ON or has been ON */
             if (CanTurnHeatPumpLowOn() || CHP_low) {
         sprintf( data + strlen(data), " L-1-2");
-                if ((!CHeater) && (SCHeater > 2)) { /* and heater is off and has been like this 30 seconds */
+                if ( (SCHeater > 2)) { /* and heater has settled */
         sprintf( data + strlen(data), " L-1-3");
                     wantHPLon = 1;
                 }
