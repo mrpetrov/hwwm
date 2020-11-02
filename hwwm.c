@@ -96,12 +96,12 @@ float sensors_prv[TOTALSENSORS+1] = { 0, -200, -200, -200, -200, -200 };
  *  hwwm will get to the real target by substracting the outside temp
  *  from the values defined in this array */
 /*                             0    1    2    3    4    5    6    7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
-short HTTB[24] = { 35, 34, 32, 32, 34, 37, 39, 42, 42, 40, 40, 38, 38, 39, 40, 42, 42, 42, 42, 42, 41, 40, 39, 36 };
+short HTTB[24] = { 30, 29, 29, 29, 29, 33, 36, 35, 35, 35, 35, 32, 32, 32, 30, 32, 32, 33, 36, 35, 35, 33, 32, 31 };
 
 /* HTTBma = HTTB monthly adjustment
     value to add according to month of year */
 /*                                0  1  2  3  4   5     6     7      8     9  10 11  12  */
-short HTTBma[13] = { 0, 8, 8, 7, 4, -8, -12, -12, -12, -10, 5, 6, 8 };
+short HTTBma[13] = { 0, 0, 0, 0, 0, -8, -12, -12, -12, -10, 0, 0, 0 };
 
 #define   currentHTTB       HTTB[current_timer_hour]
 
@@ -1258,7 +1258,7 @@ GetCurrentTime() {
     }
     /* do furnace water target temp adjusment based on the environment temp, if it looks reasonable */
     if ( (Tenv > -25) && (Tenv < 42) ) { 
-        furnace_water_target = currentHTTB - Tenv + HTTBma[current_month];
+        furnace_water_target = currentHTTB + HTTBma[current_month];
         /* clamp target water temp */
         if (furnace_water_target > 42) { furnace_water_target = 42; }
         if (furnace_water_target < 8) { furnace_water_target = 8; }
