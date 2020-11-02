@@ -1500,6 +1500,8 @@ ComputeWantedState() {
     if ((Tkotel > 20)&&(Tkotel > (TkotelPrev+0.12))) wantP1on = 1;
     /* Furnace temp is rising QUICKLY - turn pump on to limit furnace thermal shock */
     if (Tkotel > (TkotelPrev+0.18)) wantP1on = 1;
+    /* Cycle furnace water every 15 minutes that Heat Pump has been OFF */
+    if (!CHP_low && ((SCHP_low%90)==0)) wantP1on = 1;
 
     /* BOILER HEATING: ALTERNATIVE SOURCES */
     /* Do the next checks for boiler heating if boiler is allowed to take heat in */
