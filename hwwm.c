@@ -1590,7 +1590,7 @@ ComputeWantedState() {
 
     /* FURNACE WATER HEATING BY HEAT PUMP */
     /* Check: if we need to heat furnace water and ACs are allowed */
-    if ((Tkotel < furnace_water_target) && cfg.use_acs) {
+    if ((Tkotel < (furnace_water_target+0.5)) && cfg.use_acs) {
         sprintf( data + strlen(data), " HP");
         if (CanTurnHeatPumpLowOn()) sprintf( data + strlen(data), " CTHPLO");
     /* HEAT PUMP LOW  */
@@ -1617,19 +1617,21 @@ ComputeWantedState() {
                 }
             }
         }
-        if (CanTurnHeatPumpHighOn()) sprintf( data + strlen(data), " CTHPHO");
-    /* HEAT PUMP HIGH  */
-    /* Decide whether to request heat pump LOW ON or not */
-        if (cfg.max_big_consumers>=3) { /* if 3+ big consumers allowe - just go ahead */
+        if (Tkotel < furnace_water_target) {
+            if (CanTurnHeatPumpHighOn()) sprintf( data + strlen(data), " CTHPHO");
+        /* HEAT PUMP HIGH  */
+        /* Decide whether to request heat pump LOW ON or not */
+            if (cfg.max_big_consumers>=3) { /* if 3+ big consumers allowe - just go ahead */
         sprintf( data + strlen(data), " H-1-1");
-            wantHPHon = 1;
-        } else if (cfg.max_big_consumers==2) { /* else - if 2 big consumers */
+                wantHPHon = 1;
+            } else if (cfg.max_big_consumers==2) { /* else - if 2 big consumers */
         sprintf( data + strlen(data), " H-2-1");
-            if (CHP_low && (CanTurnHeatPumpHighOn() || CHP_high)) {/* and low mode is on + high can be turned or has been on */
+                if (CHP_low && (CanTurnHeatPumpHighOn() || CHP_high)) {/* and low mode is on + high can be turned or has been on */
         sprintf( data + strlen(data), " H-2-2");
-                if (!wantHon && (!CHeater) && (SCHeater > 2)) { /* and heater is off and has been like this 30 seconds and not needed */
+                    if (!wantHon && (!CHeater) && (SCHeater > 2)) { /* and heater is off and has been like this 30 seconds and not needed */
         sprintf( data + strlen(data), " H-2-3");
-                    wantHPHon = 1;
+                        wantHPHon = 1;
+                    }
                 }
             }
         }
