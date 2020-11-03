@@ -32,6 +32,7 @@ then
     mv $daemon_name.prev $daemon_name
     echo "$(tput setaf 3)Previous compile result: RESTORED.$(tput sgr0)"
     echo "$(tput setaf 7)$(tput setab 1)ERROR: Compilation failed!$(tput sgr0)"
+    exit 255
 else
     rm $daemon_name.prev
     echo "$(tput setaf 3)Previous compile result: removed.$(tput sgr0)"
