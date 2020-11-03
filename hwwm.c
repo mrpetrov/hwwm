@@ -1752,7 +1752,7 @@ int
 main(int argc, char *argv[])
 {
     /* set iter to its max value - makes sure we get a clock reading upon start */
-    unsigned short iter = 30;
+    unsigned short iter = 29;
     unsigned short iter_P = 0;
     unsigned short AlarmRaised = 0;
     unsigned short DevicesWantedState = 0;
@@ -1812,6 +1812,8 @@ main(int argc, char *argv[])
     inverting output setting of config file at startup, and thus avoid
     an unnecessary very short toggling of output relays on startup */
     ControlStateToGPIO();
+    
+    GetCurrentTime();
 
     do {
         /* Do all the important stuff... */
