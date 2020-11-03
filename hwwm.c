@@ -1260,9 +1260,15 @@ GetCurrentTime() {
     furnace_water_target = currentHTTB + HTTBma[current_month];
     /* if the environment temp looks reasonable, make adjustments if really cold */
     if ( (Tenv > -25) && (Tenv < 42) ) { 
-        /* between -5 C and 0  -  add 1 C to target */
+        /* above 16 C  -  substract 3 C from target */
+        if (Tenv >= 16) { furnace_water_target -= 3; }
+        /* between 13 C and 16 C  -  substract 2 C from target */
+        if ( (Tenv >= 13) && (Tenv < 16) ) { furnace_water_target -= 2; }
+        /* between 10 C and 13 C  -  substract 1 C from target */
+        if ( (Tenv >= 10) && (Tenv < 13) ) { furnace_water_target -= 1; }
+        /* between -5 C and 0 C -  add 1 C to target */
         if ( (Tenv >= -5) && (Tenv < 0) ) { furnace_water_target += 1; }
-        /* between -10 C and -5  -  add 2 C to target */
+        /* between -10 C and -5 C -  add 2 C to target */
         if ( (Tenv >= -10) && (Tenv < -5) ) { furnace_water_target += 2; }
         /* below -10 C outside  -  add 3 C to target */
         if ( Tenv < -10 ) { furnace_water_target += 3; }
