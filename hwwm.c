@@ -1511,7 +1511,7 @@ ComputeWantedState() {
     /* Furnace temp is rising QUICKLY - turn pump on to limit furnace thermal shock */
     if (Tkotel > (TkotelPrev+0.18)) wantP1on = 1;
     /* If Heat Pump has recently turned off, keep pump on for a bit longer */
-    if (!CHP_low && (SCHP_low<7)) wantP1on = 1;
+    if (!CHP_low && (SCHP_low<15)) wantP1on = 1;
     /* Cycle furnace water every 7 minutes that Heat Pump has been OFF */
     if (!CHP_low && ((SCHP_low%42)==0)) wantP1on = 1;
 
