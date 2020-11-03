@@ -1404,7 +1404,7 @@ unsigned short CanTurnHeaterOn() {
 }
 
 unsigned short CanTurnHeaterOff() {
-    if ((CHeater) && (SCHeater > 59)) return 1;
+    if ((CHeater) && (SCHeater > 90)) return 1;
     else return 0;
 }
 
