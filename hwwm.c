@@ -96,7 +96,7 @@ float sensors_prv[TOTALSENSORS+1] = { 0, -200, -200, -200, -200, -200 };
  *  hwwm will get to the real target by substracting the outside temp
  *  from the values defined in this array */
 /*                             0    1    2    3    4    5    6    7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
-short HTTB[24] = { 30, 29, 29, 29, 29, 33, 36, 35, 35, 35, 35, 32, 32, 32, 30, 32, 32, 33, 36, 35, 35, 33, 32, 31 };
+short HTTB[24] = { 29, 29, 29, 29, 29, 30, 31, 33, 33, 33, 33, 32, 32, 31, 30, 31, 31, 32, 33, 33, 33, 32, 31, 30 };
 
 /* HTTBma = HTTB monthly adjustment
     value to add according to month of year */
@@ -1256,12 +1256,16 @@ GetCurrentTime() {
             }
         }
     }
-    /* do furnace water target temp adjusment based on the environment temp, if it looks reasonable */
+    /* do base furnace water target temp adjusment */
+    furnace_water_target = currentHTTB + HTTBma[current_month];
+    /* if the environment temp looks reasonable, make adjustments if really cold */
     if ( (Tenv > -25) && (Tenv < 42) ) { 
-        furnace_water_target = currentHTTB + HTTBma[current_month];
-        /* clamp target water temp */
-        if (furnace_water_target > 42) { furnace_water_target = 42; }
-        if (furnace_water_target < 8) { furnace_water_target = 8; }
+        /* between -5 C and 0  -  add 1 C to target */
+        if ( (Tenv >= -5) && (Tenv < 0) ) { furnace_water_target += 1; }
+        /* between -10 C and -5  -  add 2 C to target */
+        if ( (Tenv >= -10) && (Tenv < -5) ) { furnace_water_target += 2; }
+        /* below -10 C outside  -  add 3 C to target */
+        if ( Tenv < -10 ) { furnace_water_target += 3; }
     }
 }
 
