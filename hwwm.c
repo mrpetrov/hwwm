@@ -1619,7 +1619,7 @@ ComputeWantedState() {
                 }
             }
         }
-        if (Tkotel < (furnace_water_target-1)) {
+        if (Tkotel < (furnace_water_target-1.75)) {
             if (CanTurnHeatPumpHighOn()) sprintf( data + strlen(data), " CTHPHO");
         /* HEAT PUMP HIGH  */
         /* Decide whether to request heat pump LOW ON or not */
