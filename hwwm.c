@@ -1592,7 +1592,7 @@ ComputeWantedState() {
 
     /* FURNACE WATER HEATING BY HEAT PUMP */
     /* Check: if we need to heat furnace water and ACs are allowed */
-    if ((Tkotel < (furnace_water_target+0.5)) && cfg.use_acs) {
+    if ((Tkotel < (furnace_water_target)) && cfg.use_acs) {
         sprintf( data + strlen(data), " HP");
         if (CanTurnHeatPumpLowOn()) sprintf( data + strlen(data), " CTHPLO");
     /* HEAT PUMP LOW  */
@@ -1619,7 +1619,7 @@ ComputeWantedState() {
                 }
             }
         }
-        if (Tkotel < (furnace_water_target-0.75)) {
+        if (Tkotel < (furnace_water_target-1)) {
             if (CanTurnHeatPumpHighOn()) sprintf( data + strlen(data), " CTHPHO");
         /* HEAT PUMP HIGH  */
         /* Decide whether to request heat pump LOW ON or not */
