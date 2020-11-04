@@ -1469,6 +1469,10 @@ ComputeWantedState() {
     unsigned short wantHon = 0;
     unsigned short wantHPLon = 0;
     unsigned short wantHPHon = 0;
+    unsigned short needToTurnHeatPumpLON = 0;
+    unsigned short needToKeepHeatPumpLON = 0;
+    unsigned short needToTurnHeatPumpHON = 0;
+    unsigned short needToKeepHeatPumpHON = 0;
     static char data[280];
     
     /* try to calculate what would be the lowest possible state right now */
@@ -1591,8 +1595,18 @@ ComputeWantedState() {
     }
 
     /* FURNACE WATER HEATING BY HEAT PUMP */
-    /* Check: if we need to heat furnace water and ACs are allowed */
-    if ((Tkotel < (furnace_water_target)) && cfg.use_acs) {
+    if (cfg.use_acs) { /* Consider if ACs are allowed before using them.. */
+        /* Turn HPL if it is OFF and below (target) */
+        if (!CHP_low && (Tkotel < (furnace_water_target))) needToTurnHeatPumpLON = 1;
+        /* Keep HPL ON if it is ON and below (target + 0.3 C) */
+        if (CHP_low && (Tkotel < (furnace_water_target+0.3))) needToKeepHeatPumpLON = 1;
+        /* Turn HPH if it is OFF and below (target - 1.75 C) *OR* if HPL is ON and has been like so for 20+ minutes */
+        if (!CHP_high && ((Tkotel < (furnace_water_target-1.75)) || (CHP_low && (SCHP_low > 120)))) needToTurnHeatPumpHON = 1;
+        /* Keep HPH if it is ON and below (target) */
+        if (CHP_high && (Tkotel < (furnace_water_target))) needToKeepHeatPumpHON = 1;
+    }
+    /* Check: if we need to heat furnace water */
+    if (needToTurnHeatPumpLON || needToKeepHeatPumpLON) {
         sprintf( data + strlen(data), " HP");
         if (CanTurnHeatPumpLowOn()) sprintf( data + strlen(data), " CTHPLO");
     /* HEAT PUMP LOW  */
@@ -1619,7 +1633,7 @@ ComputeWantedState() {
                 }
             }
         }
-        if (Tkotel < (furnace_water_target-1.75)) {
+        if (needToTurnHeatPumpHON || needToKeepHeatPumpHON) {
             if (CanTurnHeatPumpHighOn()) sprintf( data + strlen(data), " CTHPHO");
         /* HEAT PUMP HIGH  */
         /* Decide whether to request heat pump LOW ON or not */
