@@ -96,7 +96,7 @@ float sensors_prv[TOTALSENSORS+1] = { 0, -200, -200, -200, -200, -200 };
  *  hwwm will get to the real target by substracting the outside temp
  *  from the values defined in this array */
 /*                             0    1    2    3    4    5    6    7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
-short HTTB[24] = { 29, 28, 28, 28, 28, 30, 31, 32, 32, 32, 32, 32, 31, 30, 30, 31, 31, 31, 32, 32, 32, 31, 30, 29 };
+short HTTB[24] = { 28, 27, 27, 27, 28, 29, 30, 31, 31, 31, 31, 30, 30, 30, 30, 30, 30, 31, 31, 31, 31, 31, 30, 29 };
 
 /* HTTBma = HTTB monthly adjustment
     value to add according to month of year */
@@ -1259,19 +1259,9 @@ GetCurrentTime() {
     /* do base furnace water target temp adjusment */
     furnace_water_target = currentHTTB + HTTBma[current_month];
     /* if the environment temp looks reasonable, make adjustments if really cold */
-    if ( (Tenv > -25) && (Tenv < 42) ) { 
-        /* above 16 C  -  substract 3 C from target */
-        if (Tenv >= 16) { furnace_water_target -= 3; }
-        /* between 13 C and 16 C  -  substract 2 C from target */
-        if ( (Tenv >= 13) && (Tenv < 16) ) { furnace_water_target -= 2; }
-        /* between 10 C and 13 C  -  substract 1 C from target */
-        if ( (Tenv >= 10) && (Tenv < 13) ) { furnace_water_target -= 1; }
-        /* between -5 C and 0 C -  add 1 C to target */
-        if ( (Tenv >= -5) && (Tenv < 0) ) { furnace_water_target += 1; }
-        /* between -10 C and -5 C -  add 2 C to target */
-        if ( (Tenv >= -10) && (Tenv < -5) ) { furnace_water_target += 2; }
-        /* below -10 C outside  -  add 3 C to target */
-        if ( Tenv < -10 ) { furnace_water_target += 3; }
+    if ( (Tenv > -25) && (Tenv < 40) ) {
+        /* do a smooth sliding correction to target based on outside temp: */
+        furnace_water_target -= ((Tenv-10)*0.125);
     }
 }
 
@@ -1599,7 +1589,7 @@ ComputeWantedState() {
         /* Turn HPL if it is OFF and below (target) */
         if (!CHP_low && (Tkotel < (furnace_water_target))) needToTurnHeatPumpLON = 1;
         /* Keep HPL ON if it is ON and below (target + 0.3 C) */
-        if (CHP_low && (Tkotel < (furnace_water_target+0.3))) needToKeepHeatPumpLON = 1;
+        if (CHP_low && (Tkotel < (furnace_water_target+0.33))) needToKeepHeatPumpLON = 1;
         /* Turn HPH if it is OFF and below (target - 1.75 C) *OR*
             if HPL is ON and has been like so for 30+ minutes, yet water is below (target - 1 C) */
         if (!CHP_high && ((Tkotel < (furnace_water_target-1.75)) || 
