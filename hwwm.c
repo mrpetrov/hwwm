@@ -103,8 +103,6 @@ short HTTB[24] = { 28, 27, 27, 27, 28, 29, 30, 31, 31, 31, 31, 30, 30, 30, 30, 3
 /*                                0  1  2  3  4   5     6     7      8     9  10 11  12  */
 short HTTBma[13] = { 0, 0, 0, 0, 0, -8, -12, -12, -12, -10, 0, 0, 0 };
 
-#define   currentHTTB       HTTB[current_timer_hour]
-
 float furnace_water_target = 22.33;
 
 /* current controls state - e.g. set on last decision making */
@@ -156,6 +154,7 @@ unsigned long ProgramRunCycles  = 0;
 
 /* timers - current hour and month vars - used in keeping things up to date */
 unsigned short current_timer_hour = 0;
+unsigned short current_timer_minutes = 0;
 unsigned short current_month = 0;
 
 /* a var to be non-zero if it is winter time - so furnace should not be allowed to go too cold */
@@ -1200,14 +1199,21 @@ GetCurrentTime() {
     short adjusted = 0;
     short must_check = 0;
     unsigned short current_day_of_month = 0;
+    unsigned short next_timer_hour = 0;
 	
 	ReWrite_CFG_TABLE_FILE();
 
     t = time(NULL);
     t_struct = localtime( &t );
-    strftime( buff, sizeof buff, "%H", t_struct );
 
+    /* get current hour */
+    strftime( buff, sizeof buff, "%H", t_struct );
     current_timer_hour = atoi( buff );
+    /* get current hour minutes */
+    strftime( buff, sizeof buff, "%M", t_struct );
+    current_timer_hour_minutes = atoi( buff );
+    /* calculate next timer hour: if now is 23, next will be 0, but it is already 0 from init */
+    if (current_timer_hour != 23) { next_timer_hour = current_timer_hour + 1; }
     
     if ((current_timer_hour == 8) && ((ProgramRunCycles % (6*60)) == 0)) must_check = 1;
 
@@ -1256,8 +1262,9 @@ GetCurrentTime() {
             }
         }
     }
-    /* do base furnace water target temp adjusment */
-    furnace_water_target = currentHTTB + HTTBma[current_month];
+    /* do base furnace water target temp adjusment: sliding target between hourly ones */
+    furnace_water_target = HTTB[current_timer_hour] + HTTBma[current_month] +
+        ((HTTB[next_timer_hour] - HTTB[current_timer_hour])*(current_timer_hour_minutes/60));
     /* if the environment temp looks reasonable, make adjustments if really cold */
     if ( (Tenv > -25) && (Tenv < 40) ) {
         /* do a smooth sliding correction to target based on outside temp: */
