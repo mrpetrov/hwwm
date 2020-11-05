@@ -1211,7 +1211,7 @@ GetCurrentTime() {
     current_timer_hour = atoi( buff );
     /* get current hour minutes */
     strftime( buff, sizeof buff, "%M", t_struct );
-    current_timer_hour_minutes = atoi( buff );
+    current_timer_minutes = atoi( buff );
     /* calculate next timer hour: if now is 23, next will be 0, but it is already 0 from init */
     if (current_timer_hour != 23) { next_timer_hour = current_timer_hour + 1; }
     
@@ -1264,7 +1264,7 @@ GetCurrentTime() {
     }
     /* do base furnace water target temp adjusment: sliding target between hourly ones */
     furnace_water_target = HTTB[current_timer_hour] + HTTBma[current_month] +
-        ((HTTB[next_timer_hour] - HTTB[current_timer_hour])*(current_timer_hour_minutes/60));
+        ((HTTB[next_timer_hour] - HTTB[current_timer_hour])*(current_timer_minutes/60));
     /* if the environment temp looks reasonable, make adjustments if really cold */
     if ( (Tenv > -25) && (Tenv < 40) ) {
         /* do a smooth sliding correction to target based on outside temp: */
