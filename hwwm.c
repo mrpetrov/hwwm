@@ -58,7 +58,7 @@
 #define HIGH 1
 
 /* Maximum difference allowed for data received from sensors between reads, C */
-#define MAX_TEMP_DIFF        7
+#define MAX_TEMP_DIFF        2
 
 /* Number of all sensors to be used by the system */
 #define TOTALSENSORS         5
@@ -1052,18 +1052,6 @@ ReadSensors() {
         if ( new_val != -200 ) {
             if (sensor_read_errors[i]) sensor_read_errors[i]--;
             if (just_started) { sensors_prv[i] = new_val; sensors[i] = new_val; }
-            if (new_val < (sensors_prv[i]-(2*MAX_TEMP_DIFF))) {
-                sprintf( msg, "WARNING: Counting %6.3f for sensor %d as BAD and using %6.3f.", new_val, i, sensors_prv[i] );
-                log_message(LOG_FILE, msg);
-                new_val = sensors_prv[i];
-                sensor_read_errors[i]++;
-            }
-            if (new_val > (sensors_prv[i]+(2*MAX_TEMP_DIFF))) {
-                sprintf( msg, "WARNING: Counting %6.3f for sensor %d as BAD and using %6.3f.", new_val, i, sensors_prv[i] );
-                log_message(LOG_FILE, msg);
-                new_val = sensors_prv[i];
-                sensor_read_errors[i]++;
-            }
             if (new_val < (sensors_prv[i]-MAX_TEMP_DIFF)) {
                 sprintf( msg, "WARNING: Correcting LOW %6.3f for sensor %d with %6.3f.", new_val, i, sensors_prv[i]-MAX_TEMP_DIFF );
                 log_message(LOG_FILE, msg);
