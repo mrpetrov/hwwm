@@ -1273,7 +1273,7 @@ LogData(short HM) {
     if (CHP_high) RS|=64;
     diff = (HM ^ RS);
 
-    sprintf( data, "%2d,  %6.3f,%6.3f,%6.3f,%6.3f,%6.3f  %2d,%2d,%d,%4.1f",\
+    sprintf( data, "%2d,  %6.3f,%6.3f,%6.3f,%6.3f,%6.3f  %2d,%2d,%d,%6.3f",\
     current_timer_hour, Tkotel, Tkolektor, TboilerLow, TboilerHigh, Tenv, cfg.wanted_T, cfg.abs_max, \
     cfg.night_boost, furnace_water_target );
     if (HM) {
