@@ -25,6 +25,9 @@ fi
 #
 /etc/rc.hwwm_sender >>/run/shm/hwwm_sender_log &
 
+# start main daemon
+/usr/sbin/hwwm
+
 exit 0
 
 #EOF
