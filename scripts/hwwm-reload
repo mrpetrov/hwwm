@@ -4,16 +4,20 @@ daemon=hwwm
 daemon_pid=/run/$daemon.pid
 log_file=/var/log/$daemon.log
 
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root or use sudo $0"
+  exit 255
+fi
 
 echo "Trying to send '$daemon' USR1 signal to reload its config..."
 if [ ! -e $daemon_pid ]
 then
     echo "PID file not found - killing '$daemon' (via killall), removing PID file, and starting '$daemon' again.."
-    sudo killall -e $daemon
-    sudo rm -f $daemon_pid
-    sudo /usr/sbin/$daemon
+    killall -e $daemon
+    rm -f $daemon_pid
+    /usr/sbin/$daemon
 else
-    cat $daemon_pid | awk '{print "-USR1 " $1;}'| xargs sudo kill
+    cat $daemon_pid | awk '{print "-USR1 " $1;}'| xargs kill
 fi
 sleep 1
 echo "Here is the log:"

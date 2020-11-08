@@ -4,6 +4,11 @@ daemon=hwwm
 daemon_pid=/run/$daemon.pid
 log_file=/var/log/$daemon.log
 
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root or use sudo $0"
+  exit 255
+fi
+
 echo "Trying to kill running '$daemon' to restart it..."
 if [ ! -e $daemon_pid ]
 then
