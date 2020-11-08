@@ -1,0 +1,20 @@
+/var/log/hwwm.log
+{
+        rotate 4
+        monthly
+        missingok
+        minsize 1M
+        notifempty
+        delaycompress
+        compress
+}
+
+/var/log/hwwm_data.log
+{
+        rotate 8
+        weekly
+        missingok
+        notifempty
+        compress
+        delaycompress
+}
