@@ -1,0 +1,17 @@
+
+Install monit on the RPi you are going to use:
+sudo apt-get install monit
+
+To enable monit:
+sudo systemctl enable monit
+sudo systemctl start monit
+
+
+Then copy hwwm example monit config to /etc/monit/conf-available/
+
+
+and activate it:
+sudo ln -s /etc/monit/conf-available/hwwm /etc/monit/conf-enabled/
+
+Restart monit:
+sudo systemctl restart monit

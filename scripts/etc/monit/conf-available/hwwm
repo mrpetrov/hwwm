@@ -1,0 +1,17 @@
+ check process hwwm with pidfile /run/hwwm.pid
+   start program = "/usr/sbin/hwwm-restart"
+   stop  program = "/usr/bin/killall hwwm"
+   if 3 restarts with 3 cycles then restart
+   if changed pid then alert
+
+ check file hwwm_data with path /run/shm/hwwm_current
+   if timestamp > 30 seconds then restart
+   if timestamp > 2 minute then alert
+   depends on hwwm
+
+ check file hwwm_log with path /var/log/hwwm.log
+   if match ".*ALARM.*" then alert
+   if match ".*WARNING.*" then alert
+   if match ".*INFO.*" then alert
+   depends on hwwm
+
