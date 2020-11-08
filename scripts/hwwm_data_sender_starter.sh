@@ -23,10 +23,18 @@ fi
 # custom script tasked with exporting solard data to emoncms from the
 # openenergymonitor.org package
 #
-/etc/rc.hwwm_sender >>/run/shm/hwwm_sender_log &
+
+# wait 15 seconds
+sleep 15
 
 # start main daemon
 /usr/sbin/hwwm
+
+# wait 8 seconds
+sleep 8
+
+# start emoncms sender
+/etc/rc.hwwm_sender >>/run/shm/hwwm_sender_log &
 
 exit 0
 
