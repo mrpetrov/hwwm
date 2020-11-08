@@ -1,0 +1,20 @@
+#!/bin/bash
+
+daemon=hwwm
+daemon_pid=/run/$daemon.pid
+log_file=/var/log/$daemon.log
+
+
+echo "Trying to send '$daemon' USR1 signal to reload its config..."
+if [ ! -e $daemon_pid ]
+then
+    echo "PID file not found - killing '$daemon' (via killall), removing PID file, and starting '$daemon' again.."
+    sudo killall -e $daemon
+    sudo rm -f $daemon_pid
+    sudo /usr/sbin/$daemon
+else
+    cat $daemon_pid | awk '{print "-USR1 " $1;}'| xargs sudo kill
+fi
+sleep 1
+echo "Here is the log:"
+tail -n 30 $log_file
