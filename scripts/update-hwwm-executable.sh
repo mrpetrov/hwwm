@@ -18,6 +18,8 @@ cp /home/pi/$daemon/$daemon /usr/sbin
 echo "Replacing $daemon-reload and $daemon-restart in /usr/sbin with ones from /home/pi/$daemon/scripts/..."
 cp /home/pi/$daemon/scripts/$daemon-reload /usr/sbin
 cp /home/pi/$daemon/scripts/$daemon-restart /usr/sbin
+chmod +x /usr/sbin/$daemon-reload
+chmod +x /usr/sbin/$daemon-restart
 sleep 5
 echo "Starting $daemon again..."
 /usr/sbin/$daemon
