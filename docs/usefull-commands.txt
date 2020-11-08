@@ -1,0 +1,16 @@
+
+Clone git repository from GitHub:
+cd && git clone https://github.com/mrpetrov/hwwm.git
+
+
+One-shot command to update hpm to the latest git tree and restart:
+cd ~/hwwm && date && git pull && bash ./build.sh && sudo sh -c $HOME/hwwm/scripts/update-hwwm-executable.sh
+
+
+Manually send daemon USR1 signal:
+sudo hwwm-reload
+
+
+Watch data log file in real time in a SSH console:
+tail -F /run/shm/hwwm_data.log
+
