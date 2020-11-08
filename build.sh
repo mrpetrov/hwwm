@@ -37,5 +37,7 @@ else
     rm $daemon_name.prev
     echo "$(tput setaf 3)Previous compile result: removed.$(tput sgr0)"
     echo "$(tput setaf 2)$(tput smso)Compilation SUCCESS!$(tput rmso)$(tput sgr0)"
+#  on success, update the permissions of the update-executable script
+    chmod +x scripts/update-hwwm-executable.sh
 fi
 #EOF
