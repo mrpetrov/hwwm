@@ -119,7 +119,7 @@ short controls[11] = { -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 #define   CHP_high          controls[8]
 
 /* controls state cycles - zeroed on change to state */
-long ctrlstatecycles[10] = { -1, 150000, 150000, 2200, 2200, 32, 32, 0, 0, -1 };
+unsigned long ctrlstatecycles[10] = { 1234567890, 150000, 150000, 2200, 2200, 32, 32, 19, 0, 1234567890 };
 
 #define   SCPump1               ctrlstatecycles[1]
 #define   SCPump2               ctrlstatecycles[2]
@@ -127,6 +127,7 @@ long ctrlstatecycles[10] = { -1, 150000, 150000, 2200, 2200, 32, 32, 0, 0, -1 };
 #define   SCHeater              ctrlstatecycles[4]
 #define   SCHP_low              ctrlstatecycles[5]
 #define   SCHP_high              ctrlstatecycles[6]
+#define   SCPowerByBattery     ctrlstatecycles[7]
 
 float TotalPowerUsed;
 float NightlyPowerUsed;
@@ -1111,13 +1112,19 @@ ReadCommsPins() {
 void
 WriteCommsPins() {
     sendBits = 0;
-    /* put state on GPIO pins */
+    /* if runnning on battery power - sendBits=3 */
     if (CPowerByBattery) {
         sendBits = 3;
     }
     else {
-        if (CHP_low) sendBits = 1;
-        if (CHP_high) sendBits = 2;
+        /* if running on line power for less than 2 minutes - sendBits=3 */
+        if (SCPowerByBattery<13) {
+            sendBits = 3;
+        } else {
+            /* if running on line power for more than 2 minutes - sendBits=according to HeatPump selected mode */
+            if (CHP_low) sendBits = 1;
+            if (CHP_high) sendBits = 2;
+        }
     }
     GPIOWrite( cfg.commspin1_pin,  (sendBits&1) );
     GPIOWrite( cfg.commspin2_pin,  (sendBits&2) );
@@ -1702,6 +1709,7 @@ ActivateDevicesState(const short _ST_) {
     SCHeater++;
     SCHP_low++;
     SCHP_high++;
+    SCPowerByBattery++;
 
     /* Calculate total and night tariff electrical power used here: */
     if ( CHeater ) {
@@ -1741,7 +1749,8 @@ void
 AdjustWantedStateForBatteryPower(unsigned short WS) {
     /* Check for power source switch */
     if ( CPowerByBattery != CPowerByBatteryPrev ) {
-        /* If we just switched to battery.. */
+        /* Power source just changed in the last run cycle */
+        SCPowerByBattery = 0;
         if ( CPowerByBattery ) {
             log_message(LOG_FILE,"WARNING: Switch to BATTERY POWER detected.");
         }
