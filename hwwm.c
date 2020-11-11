@@ -1259,7 +1259,7 @@ GetCurrentTime() {
     }
     /* do base furnace water target temp adjusment: sliding target between hourly ones */
     furnace_water_target = HTTB[current_timer_hour] + HTTBma[current_month] +
-        ((HTTB[next_timer_hour] - HTTB[current_timer_hour])*(current_timer_minutes/60));
+        ((float)((HTTB[next_timer_hour] - HTTB[current_timer_hour]))*((float)(current_timer_minutes/60)));
     /* if the environment temp looks reasonable, make adjustments if really cold */
     if ( (Tenv > -25) && (Tenv < 40) ) {
         /* do a smooth sliding correction to target based on outside temp: */
