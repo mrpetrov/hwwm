@@ -1264,8 +1264,10 @@ GetCurrentTime() {
     /* do base furnace water target temp adjusment: sliding target between hourly ones */
     furnace_water_target = HTTB[current_timer_hour] + HTTBma[current_month];
     sprintf( data + strlen(data), " fwt=%5.3f", furnace_water_target);
-    bha = ((float)((HTTB[next_timer_hour] - HTTB[current_timer_hour]))*((float)(current_timer_minutes/60)));
-    sprintf( data + strlen(data), " bha=%5.3f", bha);
+    bha = HTTB[next_timer_hour] - HTTB[current_timer_hour];
+    sprintf( data + strlen(data), " bha1=%5.3f", bha);
+    bha *= ((float)current_timer_minutes)/60.0;
+    sprintf( data + strlen(data), " bha2=%5.3f", bha);
     furnace_water_target += bha;
     sprintf( data + strlen(data), " fwt1=%5.3f", furnace_water_target);
     /* if the environment temp looks reasonable, make adjustments if really cold */
