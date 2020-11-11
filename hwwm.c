@@ -1195,6 +1195,8 @@ GetCurrentTime() {
     short must_check = 0;
     unsigned short current_day_of_month = 0;
     unsigned short next_timer_hour = 0;
+    float bha = 0; /* between hours adjustment */
+    static char data[280];
 	
 	ReWrite_CFG_TABLE_FILE();
 
@@ -1257,14 +1259,22 @@ GetCurrentTime() {
             }
         }
     }
+    sprintf( data, "-------> GetCurrentTime:" );
+    sprintf( data + strlen(data), " ctm=%d", current_timer_minutes);
     /* do base furnace water target temp adjusment: sliding target between hourly ones */
-    furnace_water_target = HTTB[current_timer_hour] + HTTBma[current_month] +
-        ((float)((HTTB[next_timer_hour] - HTTB[current_timer_hour]))*((float)(current_timer_minutes/60)));
+    furnace_water_target = HTTB[current_timer_hour] + HTTBma[current_month];
+    sprintf( data + strlen(data), " fwt=%5.3f", furnace_water_target);
+    bha = ((float)((HTTB[next_timer_hour] - HTTB[current_timer_hour]))*((float)(current_timer_minutes/60)));
+    sprintf( data + strlen(data), " bha=%5.3f", bha);
+    furnace_water_target += bha;
+    sprintf( data + strlen(data), " fwt1=%5.3f", furnace_water_target);
     /* if the environment temp looks reasonable, make adjustments if really cold */
     if ( (Tenv > -25) && (Tenv < 40) ) {
         /* do a smooth sliding correction to target based on outside temp: */
         furnace_water_target -= ((Tenv-10)*0.125);
     }
+    sprintf( data + strlen(data), " fwt2=%5.3f", furnace_water_target);
+    log_message(DATA_FILE, data);
 }
 
 void
