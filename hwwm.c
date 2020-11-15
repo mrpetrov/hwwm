@@ -44,7 +44,7 @@
 #define JSON_FILE	"/run/shm/hwwm_current_json"
 #define CFG_TABLE_FILE  "/run/shm/hwwm_cur_cfg"
 #define CONFIG_FILE     "/etc/hwwm.cfg"
-#define POWER_FILE      "/var/log/hwwm_power"
+#define PERSISTENCE_FILE      "/var/log/hwwm_persistent"
 
 #define BUFFER_MAX 3
 #define DIRECTION_MAX 35
@@ -676,7 +676,7 @@ parse_config()
 }
 
 void
-WritePersistentPower() {
+WritePersistentData() {
     FILE *logfile;
     char timestamp[30];
     time_t t;
@@ -686,16 +686,16 @@ WritePersistentPower() {
     t_struct = localtime( &t );
     strftime( timestamp, sizeof timestamp, "%F %T", t_struct );
 
-    logfile = fopen( POWER_FILE, "w" );
+    logfile = fopen( PERSISTENCE_FILE, "w" );
     if ( !logfile ) return;
-    fprintf( logfile, "# hwwm power persistence file written %s\n", timestamp );
+    fprintf( logfile, "# hwwm persistent data file written @ %s\n", timestamp );
     fprintf( logfile, "total=%6.3f\n", TotalPowerUsed );
     fprintf( logfile, "nightly=%6.3f\n", NightlyPowerUsed );
     fclose( logfile );
 }
 
 void
-ReadPersistentPower() {
+ReadPersistentData() {
     float f = 0;
     char *s, buff[150];
     char totalP_str[MAXLEN];
@@ -703,9 +703,9 @@ ReadPersistentPower() {
     short should_write=0;
     strcpy( totalP_str, "0" );
     strcpy( nightlyP_str, "0" );
-    FILE *fp = fopen(POWER_FILE, "r");
+    FILE *fp = fopen(PERSISTENCE_FILE, "r");
     if (fp == NULL) {
-        log_message(LOG_FILE,"WARNING: Failed to open "POWER_FILE" file for reading!");
+        log_message(LOG_FILE,"WARNING: Failed to open "PERSISTENCE_FILE" file for reading!");
         should_write = 1;
         } else {
         /* Read next line */
@@ -736,8 +736,8 @@ ReadPersistentPower() {
     }
 
     if (should_write) {
-        log_message(LOG_FILE, "Creating missing power persistence data file...");
-        WritePersistentPower();
+        log_message(LOG_FILE, "Creating missing persistent data file...");
+        WritePersistentData();
     }
     else {
         /* Convert strings to float */
@@ -950,7 +950,7 @@ signal_handler(int sig)
         break;
         case SIGTERM:
         log_message(LOG_FILE, "INFO: Terminate signal caught. Stopping. *************************");
-        WritePersistentPower();
+        WritePersistentData();
         if ( ! DisableGPIOpins() ) {
             log_message(LOG_FILE, "WARNING: Errors disabling GPIO pins! Quitting anyway.");
             exit(14);
@@ -1156,7 +1156,7 @@ write_log_start() {
     log_message(LOG_FILE,"Running in "RUNNING_DIR", config file "CONFIG_FILE );
     log_message(LOG_FILE,"PID written to "LOCK_FILE", writing CSV data to "DATA_FILE );
     log_message(LOG_FILE,"Writing table data for collectd to "TABLE_FILE );
-    log_message(LOG_FILE,"Power used persistence file "POWER_FILE );
+    log_message(LOG_FILE,"Persistent data file "PERSISTENCE_FILE );
     sprintf( start_log_text, "Powers: heater=%3.1f W, pump1=%3.1f W, pump2=%3.1f W",
     HEATERPPC*(6*60), PUMP1PPC*(6*60), PUMP2PPC*(6*60) );
     log_message(LOG_FILE, start_log_text );
@@ -1830,7 +1830,7 @@ main(int argc, char *argv[])
 
     parse_config();
 
-    ReadPersistentPower();
+    ReadPersistentData();
 
     /* Enable GPIO pins */
     if ( ! EnableGPIOpins() ) {
@@ -1865,7 +1865,7 @@ main(int argc, char *argv[])
             iter_P++;
             if ( iter_P == 2) {
                 iter_P = 0;
-                WritePersistentPower();
+                WritePersistentData();
             }
         }
         iter++;
