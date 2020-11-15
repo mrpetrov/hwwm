@@ -1622,8 +1622,8 @@ ComputeWantedState() {
         if (!CHP_low && (SCHP_low <= 6*10) && (Tkotel < (furnace_water_target+0.25))) needToTurnHeatPumpLON = 1;
         /* If HPL has been off for OVER 10 minutes - furnace water target is +1.12 */
         if (!CHP_low && (SCHP_low > 6*10) && (Tkotel < (furnace_water_target+1.12))) needToTurnHeatPumpLON = 1;
-        /* Keep HPL ON if it is ON and below (target + 0.4 C) */
-        if (CHP_low && (Tkotel < (furnace_water_target+0.4))) needToKeepHeatPumpLON = 1;
+        /* Keep HPL ON if it is ON and furnace water temp is below (target + 0.6 C) */
+        if (CHP_low && (Tkotel < (furnace_water_target+0.6))) needToKeepHeatPumpLON = 1;
         /* Turn HPH if it is OFF ... */ 
         if (!CHP_high) {
             /*and furnace water is below (target - 1.5 C) */
@@ -1633,8 +1633,8 @@ ComputeWantedState() {
             /* *OR* if HPL is ON and has been like so for 40+ minutes, yet water is below (target + 0.25 C) */
             if (CHP_low && (SCHP_low > 6*40) && (Tkotel < (furnace_water_target+0.25)))  { needToTurnHeatPumpHON = 1; }
         }
-        /* Keep HPH if it is ON until water reaches (target + 0.12 C) */
-        if (CHP_high && (Tkotel < (furnace_water_target+0.12))) needToKeepHeatPumpHON = 1;
+        /* Keep HPH if it is ON until water reaches (target + 0.25 C) */
+        if (CHP_high && (Tkotel < (furnace_water_target+0.25))) needToKeepHeatPumpHON = 1;
     }
     /* Check: if we need to heat furnace water */
     if (needToTurnHeatPumpLON || needToKeepHeatPumpLON) {
