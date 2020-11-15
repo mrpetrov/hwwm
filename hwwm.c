@@ -128,6 +128,7 @@ unsigned long ctrlstatecycles[10] = { 1234567890, 150000, 150000, 2200, 2200, 32
 #define   SCHP_low              ctrlstatecycles[5]
 #define   SCHP_high              ctrlstatecycles[6]
 #define   SCPowerByBattery     ctrlstatecycles[7]
+#define   SsinceLastLegionella     ctrlstatecycles[8]
 
 float TotalPowerUsed;
 float NightlyPowerUsed;
@@ -692,15 +693,18 @@ WritePersistentData() {
     fprintf( logfile, "# hwwm persistent data file written @ %s\n", timestamp );
     fprintf( logfile, "total=%6.3f\n", TotalPowerUsed );
     fprintf( logfile, "nightly=%6.3f\n", NightlyPowerUsed );
+    fprintf( logfile, "leg_prot=%lu\n", SsinceLastLegionella );
     fclose( logfile );
 }
 
 void
 ReadPersistentData() {
     float f = 0;
+    long l = 0;
     char *s, buff[150];
     char totalP_str[MAXLEN];
     char nightlyP_str[MAXLEN];
+    char legProt_str[MAXLEN];
     short should_write=0;
     strcpy( totalP_str, "0" );
     strcpy( nightlyP_str, "0" );
@@ -731,6 +735,8 @@ ReadPersistentData() {
             strncpy (totalP_str, value, MAXLEN);
             else if (strcmp(name, "nightly")==0)
             strncpy (nightlyP_str, value, MAXLEN);
+            else if (strcmp(name, "leg_prot")==0)
+            strncpy (legProt_str, value, MAXLEN);
         }
         /* Close file */
         fclose (fp);
@@ -741,13 +747,16 @@ ReadPersistentData() {
         WritePersistentData();
     }
     else {
-        /* Convert strings to float */
+        /* Convert strings to corresponding var type */
         strcpy( buff, totalP_str );
         f = atof( buff );
         TotalPowerUsed = f;
         strcpy( buff, nightlyP_str );
         f = atof( buff );
         NightlyPowerUsed = f;
+        strcpy( buff, legProt_str );
+        l = atol( buff );
+        SsinceLastLegionella = l;
     }
 
     /* Prepare log message and write it to log file */
@@ -758,6 +767,8 @@ ReadPersistentData() {
         sprintf( buff, "INFO: Read power counters start values: Total=%6.3f, Nightly=%6.3f",
         TotalPowerUsed, NightlyPowerUsed );
     }
+    log_message(LOG_FILE, buff);
+    sprintf( buff, "INFO: Cycles since last legionella purge: %lu", SsinceLastLegionella );
     log_message(LOG_FILE, buff);
 }
 
@@ -1566,6 +1577,15 @@ ComputeWantedState() {
     if ( (cfg.night_boost) && (current_timer_hour >= (NEstop-1)) && (current_timer_hour <= NEstop) ) {
         if ((TboilerLow < nightEnergyTemp) && CanTurnHeaterOn()) { wantHon = 1; }
     }
+    /* During night tariff, once every 30 days - heat the boiler to near 70 C to kill all possible legionella build-up;
+       wikipedia says that above 66 C legionella dies within 2 minutes */
+    if ( (SsinceLastLegionella > 6*60*24*30) && (current_timer_hour >= 2) && (current_timer_hour <= NEstop) ) {
+        if (TboilerLow < 67) {
+            if (CanTurnHeaterOn()) { wantHon = 1; }
+        } else { 
+            SsinceLastLegionella = 0; 
+        }
+    }
 
     sprintf( data, "compute: " );
     if ( BoilerNeedsHeat() ) sprintf( data + strlen(data), " BNH");
@@ -1728,6 +1748,7 @@ ActivateDevicesState(const short _ST_) {
     SCHP_low++;
     SCHP_high++;
     SCPowerByBattery++;
+    SsinceLastLegionella++;
 
     /* Calculate total and night tariff electrical power used here: */
     if ( CHeater ) {
