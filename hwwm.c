@@ -1570,7 +1570,9 @@ ComputeWantedState() {
     /* In the last 2 hours of night energy tariff heat up boiler until the lower sensor reads several degrees
        on top of desired temp, clamped at cfg.abs_max, so that less day energy gets used */
     if ( (cfg.night_boost) && (current_timer_hour >= (NEstop-1)) && (current_timer_hour <= NEstop) ) {
-        if ((TboilerLow < nightEnergyTemp) && CanTurnHeaterOn()) { wantHon = 1; }
+        if (TboilerLow < nightEnergyTemp) {
+            if (CHeater || CanTurnHeaterOn()) { wantHon = 1; }
+        }
     }
     /* During night tariff, once every 30 days - heat the boiler to near 70 C to kill all possible legionella build-up;
        wikipedia says that above 66 C legionella dies within 2 minutes */
