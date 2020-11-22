@@ -1635,8 +1635,8 @@ ComputeWantedState() {
             /* *OR* if HPL is ON and has been like so for 40+ minutes, yet water is below (target + 0.33 C) */
             if (CHP_low && (SCHP_low > 6*40) && (Tkotel < (furnace_water_target+0.33)))  { needToTurnHeatPumpHON = 1; }
         }
-        /* Keep HPH if it is ON until water reaches (target + 0.25 C) */
-        if (CHP_high && (Tkotel < (furnace_water_target+0.25))) needToKeepHeatPumpHON = 1;
+        /* Keep HPH if it is ON until water reaches (target + 0.5 C) */
+        if (CHP_high && (Tkotel < (furnace_water_target+0.5))) needToKeepHeatPumpHON = 1;
     }
     /* Check: if we need to heat furnace water */
     if (needToTurnHeatPumpLON || needToKeepHeatPumpLON) {
