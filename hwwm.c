@@ -1506,8 +1506,8 @@ ComputeWantedState() {
     StateMinimum = (~StateMinimum)&111;
     
     /* EVACUATED TUBES COLLECTOR: EXTREMES PROTECTIONS */
-    /* If collector is below 7 C and its getting cold -	turn pump on to prevent freezing */
-	if ((Tkolektor < 7)&&(Tenv < 3)) wantP2on = 1;
+    /* If collector is below 4 C and its getting cold - turn pump on to prevent freezing */
+	if ((Tkolektor < 4)&&(Tenv < 2)) wantP2on = 1;
     /* Prevent ETC from boiling its work fluid away in case all heat targets have been reached
         and yet there is no use because for example the users are away on vacation */
     if (Tkolektor > 65) {
