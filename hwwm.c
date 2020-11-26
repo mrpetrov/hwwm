@@ -168,6 +168,10 @@ unsigned short pump_start_hour_for[13] = { 11, 14, 13, 12, 11, 10, 9, 9, 10, 11,
 /* Comms buffer */
 unsigned short COMMS = 0;
 
+/* Only 1 big consumer hours help vars */
+unsigned short NBC_replaced = 0;
+unsigned short NBC_original = 0;
+
 /* Send bits 
     States:
     0 == ALL OFF
@@ -675,6 +679,7 @@ parse_config()
        build-up in the tank; keeping in too low (30 to 45) makes for a perfect bacteria environment */
     nightEnergyTemp = ((float)cfg.wanted_T + 6);
     if (nightEnergyTemp > (float)cfg.abs_max) { nightEnergyTemp = (float)cfg.abs_max; }
+    NBC_original = cfg.max_big_consumers;
 }
 
 void
@@ -1226,6 +1231,20 @@ GetCurrentTime() {
     
     if ((current_timer_hour == 8) && ((ProgramRunCycles % (6*60)) == 0)) must_check = 1;
 
+    /* for hours 11, 12, 17, 18 - make max big consumers exactly 1 */
+    if ( (current_timer_hour == 11) || (current_timer_hour == 12) || 
+         (current_timer_hour == 17) || (current_timer_hour == 18) ) {
+        if (!NBC_replaced) {
+            NBC_replaced = 1;
+            cfg.max_big_consumers = 1;
+        }
+    } else {
+        if (NBC_replaced) {
+            NBC_replaced = 0;
+            cfg.max_big_consumers = NBC_original;
+        }
+    }
+    
     /* adjust night tariff start and stop hours at program start and
     every day sometime between 8:00 and 9:00 */
     if (( just_started ) || ( must_check )) {
@@ -1670,7 +1689,7 @@ ComputeWantedState() {
             if (CanTurnHeatPumpHighOn()) sprintf( data + strlen(data), " CTHPHO");
         /* HEAT PUMP HIGH  */
         /* Decide whether to request heat pump LOW ON or not */
-            if (cfg.max_big_consumers>=3) { /* if 3+ big consumers allowe - just go ahead */
+            if (cfg.max_big_consumers>=3) { /* if 3+ big consumers allowed - just go ahead */
         sprintf( data + strlen(data), " H-1-1");
                 wantHPHon = 1;
             } else if (cfg.max_big_consumers==2) { /* else - if 2 big consumers */
