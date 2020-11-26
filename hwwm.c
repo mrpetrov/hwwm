@@ -58,7 +58,7 @@
 #define HIGH 1
 
 /* Maximum difference allowed for data received from sensors between reads, C */
-#define MAX_TEMP_DIFF        5
+#define MAX_TEMP_DIFF        7
 
 /* Number of all sensors to be used by the system */
 #define TOTALSENSORS         5
