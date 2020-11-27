@@ -1587,9 +1587,9 @@ ComputeWantedState() {
     if ( (!CPump1) && (SCPump1 > (6*60*2)) ) wantP1on = 1;
 
     /* ELECTRICAL HEATER: SMART FUNCTIONS */
-    /* In the last 3 hours of night energy tariff heat up boiler until the lower sensor reads several degrees
+    /* At 4 o'clock use night energy tariff to heat up boiler until the lower sensor reads several degrees
        on top of desired temp, clamped at cfg.abs_max, so that less day energy gets used */
-    if ( (cfg.night_boost) && (current_timer_hour >= (NEstop-2)) && (current_timer_hour <= NEstop) ) {
+    if ( (cfg.night_boost) && (current_timer_hour == 4) ) {
         if (TboilerLow < nightEnergyTemp) {
             if (CHeater || CanTurnHeaterOn()) { wantHon = 1; }
         }
