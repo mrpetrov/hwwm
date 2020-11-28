@@ -1450,12 +1450,12 @@ unsigned short CanTurnHeatPumpLowOn() {
 }
 
 unsigned short CanTurnHeatPumpLowOff() {
-    if (CHP_low && !CHP_high && (SCHP_high>1) && (COMMS>=2))  return 1;
+    if (CHP_low && !CHP_high && (SCHP_high>5) && (COMMS>=2))  return 1;
     else return 0;
 }
 
 unsigned short CanTurnHeatPumpHighOn() {
-    if (!CHP_high && CHP_low && (SCHP_low>2) && (SCHeater > 2) && 
+    if (!CHP_high && CHP_low && (SCHP_low>3) && (SCHeater > 2) && 
         ((COMMS==1) || (COMMS==3))) return 1;
     else return 0;
 }
