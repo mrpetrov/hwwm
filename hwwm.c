@@ -1556,13 +1556,13 @@ ComputeWantedState() {
         /* Keep solar pump on while solar fluid is more than 5 C hotter than boiler lower end */
         if ((CPump2) && (Tkolektor > (TboilerLow+4))) wantP2on = 1;
         /* Furnace has heat in excess - open the valve so boiler can build up heat while it can */
-        if ((Tkotel > (TboilerHigh+3)) || (Tkotel > (TboilerLow+9)))  {
+        if ((Tkotel > (TboilerHigh+2)) || (Tkotel > (TboilerLow+4)))  {
             wantVon = 1;
             /* And if valve has been open for 90 seconds - turn furnace pump on */
-            if (CValve && (SCValve > 8)) wantP1on = 1;
+            if (CValve && (SCValve >= 9)) wantP1on = 1;
         }
         /* Keep valve open while there is still heat to exploit */
-        if ((CValve) && (Tkotel > (TboilerLow+4))) wantVon = 1;
+        if ((CValve) && (Tkotel > (TboilerLow+3))) wantVon = 1;
     }
 
     /* EVACUATED TUBES COLLECTOR: HOUSE KEEPING */
