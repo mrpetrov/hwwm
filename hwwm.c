@@ -1429,8 +1429,9 @@ unsigned short CanTurnHeaterOn() {
     return 0;
 }
 
+/* to turn electrical heater OFF - it must have been ON for at least 20 minutes */
 unsigned short CanTurnHeaterOff() {
-    if ((CHeater) && (SCHeater > 90)) return 1;
+    if ((CHeater) && (SCHeater > 20*6)) return 1;
     else return 0;
 }
 
