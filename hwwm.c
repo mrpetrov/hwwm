@@ -903,9 +903,9 @@ float
 sensorRead(const char* sensor)
 {
     char path[VALUE_MAX];
-    char value_str[50];
+    char value_str[95];
     int fd;
-    char *str = "84 01 55 00 3f ff 3f 10 d7 t=114250";
+    char *str = "29 01 55 05 7f a5 a5 66 b3 : crc=b3 YES  84 01 55 00 3f ff 3f 10 d7 t=114250";
     const char *result = str;
     long int_temp = 0;
     float temp = -200;
@@ -916,31 +916,21 @@ sensorRead(const char* sensor)
     fd = open(path, O_RDONLY);
     if (-1 == fd) {
         log_message(LOG_FILE,"Error opening sensor file. Continuing.");
-        return(temp);
+        return temp;
     }
 
-    /* read the first line of data */
-    if (-1 == read(fd, value_str, 39)) {
+    /* do the data read in one go - up to 88 characters */
+    if (-1 == read(fd, value_str, 88)) {
         log_message(LOG_FILE,"Error reading from sensor file. Continuing.");
         close(fd);
-        return(temp);
-    }
-
-    /* throw the first line away */
-    strncpy(value_str, " ", 48);
-
-    /* read the second line into value_str */
-    if (-1 == read(fd, value_str, 35)) {
-        log_message(LOG_FILE,"Error reading row 2 from sensor file. Continuing.");
-        close(fd);
-        return(temp);
+        return temp;
     }
 
     /* close the file - we are done with it */
     close(fd);
 
-    /* transform sensor data to float */
-    if((result = strchr((char *)&value_str, '=')) != NULL) {
+    /* transform sensor data to float by finding last "=" sign */
+    if ((result = strrchr((char *)&value_str, '=')) != NULL) {
         /* increment result to avoid the '=' */
         ++result;
         int_temp = atol( result );
@@ -948,7 +938,7 @@ sensorRead(const char* sensor)
     }
 
     /* return the read temperature */
-    return(temp);
+    return temp;
 }
 
 void
