@@ -1862,7 +1862,7 @@ main(int argc, char *argv[])
 
     write_log_start();
 
-    just_started = 3;
+    just_started = 4;
     TotalPowerUsed = 0;
     NightlyPowerUsed = 0;
 
@@ -1894,6 +1894,13 @@ main(int argc, char *argv[])
         /* Do all the important stuff... */
         if ( gettimeofday( &tvalBefore, NULL ) ) {
             log_message(LOG_FILE,"WARNING: error getting tvalBefore...");
+        }
+        if ( just_started ) { just_started--; }
+        if ( need_to_read_cfg ) {
+            need_to_read_cfg = 0;
+            just_started = 1;
+            parse_config();
+            iter = 30;
         }
         /* get the current hour every 5 minutes for electric heater schedule */
         if ( iter == 30 ) {
@@ -1940,12 +1947,6 @@ main(int argc, char *argv[])
         WriteCommsPins();
         LogData(DevicesWantedState);
         ProgramRunCycles++;
-        if ( just_started ) { just_started--; }
-        if ( need_to_read_cfg ) {
-            need_to_read_cfg = 0;
-            just_started = 1;
-            parse_config();
-        }
         if ( gettimeofday( &tvalAfter, NULL ) ) {
             log_message(LOG_FILE,"WARNING: error getting tvalAfter...");
             sleep( 7 );
