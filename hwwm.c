@@ -1484,6 +1484,8 @@ CriticalTempsFound() {
 short
 BoilerNeedsHeat() {
     short ret = 0;
+    /* if both day and night use of electric heater are disabled - return 0 */
+    if (!cfg.use_electric_heater_night && !cfg.use_electric_heater_day) return 0;
     if ( TboilerHigh < ((float)cfg.wanted_T) ) ret+=1;
     if ( TboilerLow < ((float)cfg.wanted_T - (now_is_winter==1 ? 3:11)) ) ret+=20;
     if ( CHeater && CHP_low && (TboilerLow < ((float)cfg.wanted_T)) ) ret+=300;
