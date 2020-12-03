@@ -1350,7 +1350,8 @@ LogData(short HM) {
         if (diff&64) sprintf( data + strlen(data), " HP2");
     }
     else sprintf( data + strlen(data), "    OK!  ");
-    if (CPowerByBattery) sprintf( data + strlen(data), " *UPS*");
+    if (CPowerByBattery) { sprintf( data + strlen(data), " *UPS*"); }
+    if (NBC_replaced) { sprintf( data + strlen(data), " *1BC*"); }
     sprintf( data + strlen(data), " sendBits:%d COMMS:%d", sendBits, COMMS);
     log_message(DATA_FILE, data);
 
