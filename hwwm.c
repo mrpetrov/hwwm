@@ -100,7 +100,7 @@ const char *sensor_names[TOTALSENSORS+1] = { "zero", "furnace", "solar collector
  *  hwwm will get to the real target by substracting the outside temp
  *  from the values defined in this array */
 /*                             0    1    2    3    4    5    6    7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
-short HTTB[24] = { 26, 26, 26, 28, 30, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 29 };
+short HTTB[24] = { 26, 26, 26, 26, 26, 29, 30, 33, 33, 33, 33, 30, 30, 33, 33, 33, 30, 30, 33, 33, 33, 33, 33, 33 };
 
 /* HTTBma = HTTB monthly adjustment
     value to add according to month of year */
