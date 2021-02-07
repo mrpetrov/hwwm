@@ -1225,10 +1225,10 @@ GetCurrentTime() {
     
     if ((current_timer_hour == 8) && ((ProgramRunCycles % (6*60)) == 0)) must_check = 1;
 
-    /* for hours 11, 12, 16, 17 - make the maximum big consumers 1 to allow the confident 
+    /* for hours 11, 12, 15, 16 - make the maximum big consumers 1 to allow the confident 
        use of other high powered home appliances and avoid tripping circuit brakers */
     if ( (current_timer_hour == 11) || (current_timer_hour == 12) || 
-         (current_timer_hour == 16) || (current_timer_hour == 17) ) {
+         (current_timer_hour == 15) || (current_timer_hour == 16) ) {
         if (!NBC_replaced) {
             NBC_replaced = 1;
             cfg.max_big_consumers = 1;
