@@ -1635,7 +1635,7 @@ ComputeWantedState() {
     }
 
     /* FURNACE WATER HEATING BY HEAT PUMP */
-    if ((Tenv >= -2)&&cfg.use_acs) { /* Consider if ACs are allowed before using them.. */
+    if ((Tenv > -3)&&cfg.use_acs) { /* Consider if it's too cold and ACs are allowed before using them.. */
         /* For Heat Pump LOW consider 2 cases, based on the time for which HPL has been OFF;
            basically the idea is to consider losses and ramp-up-to-temp time for the heat pumps */
         /* If HPL has been off for under 10 minutes - furnace water target is +0.25 */
