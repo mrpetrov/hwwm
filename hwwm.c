@@ -100,7 +100,7 @@ const char *sensor_names[TOTALSENSORS+1] = { "zero", "furnace", "solar collector
 to calculate an average, which gets used to decide to heat, cool or stay idle */
 float TenvArr[12] = { 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20 };
 /* TenvArr_lu holds the index of the last updated TenvArr element */
-short TenvArr_lu = 0;
+unsigned short TenvArr_lu = 0;
 /* and the average environment temp var itself */
 float TenvAvrg = 20;
 
