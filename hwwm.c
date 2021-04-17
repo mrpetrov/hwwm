@@ -106,8 +106,9 @@ float TenvAvrg = 20;
 
 /* HTTB == Hourly Target Temp Base for furnace water; NB 24:00 = 0;
  *  hwwm will get to the target temp from the values defined here */
+/* HTTBh - HTTB heat */
 /*                             0    1    2    3    4    5    6    7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
-short HTTB[24] = { 27, 26, 26, 26, 27, 29, 32, 33, 34, 34, 35, 34, 34, 34, 35, 34, 34, 34, 33, 34, 34, 33, 32, 29 };
+short HTTBh[24] = { 27, 26, 26, 26, 27, 29, 32, 33, 34, 34, 35, 34, 34, 34, 35, 34, 34, 34, 33, 34, 34, 33, 32, 29 };
 
 /* HTTBc - HTTB cool */
 /*                              0    1    2    3    4    5    6    7    8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
@@ -1314,14 +1315,28 @@ GetCurrentTime() {
             }
         }
     }
+    if (TenvAvrg > 23) { 
+        HPmode = COOL;
+    } else { 
+        HPmode = HEAT;
+    }
     sprintf( data, "-------> GetCurrentTime:" );
     sprintf( data + strlen(data), " ctm=%d", current_timer_minutes);
     /* do base furnace water target temp adjusment: sliding target between hourly ones */
-    furnace_water_target = HTTB[current_timer_hour];
+    if (HPmode == HEAT) {
+        furnace_water_target = HTTBh[current_timer_hour];
+    } else {
+        furnace_water_target = HTTBc[current_timer_hour];
+    }
     sprintf( data + strlen(data), " fwt=%5.3f", furnace_water_target);
     bha = ((float)current_timer_minutes)/60.0;
     sprintf( data + strlen(data), " bha1=%5.3f", bha);
-    bha *= HTTB[next_timer_hour] - HTTB[current_timer_hour];
+    bha *= HTTBh[next_timer_hour] - HTTBh[current_timer_hour];
+    if (HPmode == HEAT) {
+        bha *= HTTBh[next_timer_hour] - HTTBh[current_timer_hour];
+    } else {
+        bha *= HTTBc[next_timer_hour] - HTTBc[current_timer_hour];
+    }
     sprintf( data + strlen(data), " bha2=%5.3f", bha);
     furnace_water_target += bha;
     sprintf( data + strlen(data), " fwt1=%5.3f", furnace_water_target);
