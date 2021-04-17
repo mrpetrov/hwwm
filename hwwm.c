@@ -102,11 +102,6 @@ const char *sensor_names[TOTALSENSORS+1] = { "zero", "furnace", "solar collector
 /*                             0    1    2    3    4    5    6    7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
 short HTTB[24] = { 27, 26, 26, 26, 27, 29, 32, 33, 34, 34, 35, 34, 34, 34, 35, 34, 34, 34, 33, 34, 34, 33, 32, 29 };
 
-/* HTTBma = HTTB monthly adjustment
-    value to add according to month of year */
-/*                                0  1  2  3  4   5     6     7      8     9  10 11  12  */
-short HTTBma[13] = { 0, 0, 0, 0, 0, -8, -12, -12, -12, -10, 0, 0, 0 };
-
 float furnace_water_target = 22.33;
 
 /* current controls state - e.g. set on last decision making */
@@ -1288,7 +1283,7 @@ GetCurrentTime() {
     sprintf( data, "-------> GetCurrentTime:" );
     sprintf( data + strlen(data), " ctm=%d", current_timer_minutes);
     /* do base furnace water target temp adjusment: sliding target between hourly ones */
-    furnace_water_target = HTTB[current_timer_hour] + HTTBma[current_month];
+    furnace_water_target = HTTB[current_timer_hour];
     sprintf( data + strlen(data), " fwt=%5.3f", furnace_water_target);
     bha = ((float)current_timer_minutes)/60.0;
     sprintf( data + strlen(data), " bha1=%5.3f", bha);
