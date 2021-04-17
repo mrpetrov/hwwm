@@ -1495,6 +1495,20 @@ void TurnHeatPumpLowOn()  { CHP_low = 1; SCHP_low = 0; }
 void TurnHeatPumpHighOff() { CHP_high = 0; SCHP_high = 0; }
 void TurnHeatPumpHighOn() { CHP_high = 1; SCHP_high = 0; }
 
+/* Return non-zero value if Heat Pumps should HEAT */
+short
+HPshouldHeat() {
+    if ( (Tenv > -3) && (TenvAvrg < 18) ) return 1;
+    return 0;
+}
+
+/* Return non-zero value if Heat Pumps should COOL */
+short
+HPshouldCool() {
+    if (TenvAvrg > 28) return 1;
+    return 0;
+}
+
 /* Return non-zero value on critical condition found based on current data in sensors[] */
 short
 CriticalTempsFound() {
@@ -1656,7 +1670,8 @@ ComputeWantedState() {
     }
 
     /* FURNACE WATER HEATING BY HEAT PUMP */
-    if ((Tenv > -3)&&cfg.use_acs) { /* Consider if it's too cold and ACs are allowed before using them.. */
+    if ( cfg.use_acs &&       /* Consider if ACs are allowed */
+         HPshouldHeat() ) {   /* ... and temps are OK for heating */
         /* For Heat Pump LOW consider 2 cases, based on the time for which HPL has been OFF;
            basically the idea is to consider losses and ramp-up-to-temp time for the heat pumps */
         /* If HPL has been off for under 10 minutes - furnace water target is +0.25 */
