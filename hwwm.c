@@ -1199,6 +1199,24 @@ ReWrite_CFG_TABLE_FILE() {
     log_msg_ovr(CFG_TABLE_FILE, data);
 }
 
+/* function to calculate average temp of environment based on last minute or so data */
+void 
+CalcTenvAverage() {
+    float na = 0;
+    /* do index moving first */
+    TenvArr_lu++;
+    if (TenvArr_lu > 11) { /* if index is beyond array end - move it to first element */
+        TenvArr_lu = 0;
+    }
+    /* then replace oldest value in array with last read one */
+    TenvArr[TenvArr_lu] = Tenv;
+    /* and finaly - calculate new average */
+    for (short k=0;k<12;k++) {
+        na = na + TenvArr[k];
+    }
+    TenvAvrg = na / 12.0;
+}
+
 /* Function to get current time and put the hour in current_timer_hour */
 void
 GetCurrentTime() {
@@ -1923,6 +1941,7 @@ main(int argc, char *argv[])
         ReadSensors();
         ReadExternalPower();
         ReadCommsPins();
+        CalcTenvAverage();
         /* do what "mode" from CFG files says - watch the LOG file to see used values */
         switch (cfg.mode) {
             default:
