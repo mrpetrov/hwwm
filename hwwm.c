@@ -105,12 +105,20 @@ short TenvArr_lu = 0;
 float TenvAvrg = 20;
 
 /* HTTB == Hourly Target Temp Base for furnace water; NB 24:00 = 0;
- *  hwwm will get to the real target by substracting the outside temp
- *  from the values defined in this array */
+ *  hwwm will get to the target temp from the values defined here */
 /*                             0    1    2    3    4    5    6    7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
 short HTTB[24] = { 27, 26, 26, 26, 27, 29, 32, 33, 34, 34, 35, 34, 34, 34, 35, 34, 34, 34, 33, 34, 34, 33, 32, 29 };
 
+/* HTTBc - HTTB cool */
+/*                              0    1    2    3    4    5    6    7    8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
+short HTTBc[24] = { 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15 };
+
 float furnace_water_target = 22.33;
+
+#define HEAT 0
+#define COOL 1
+
+unsigned short HPmode = HEAT;
 
 /* current controls state - e.g. set on last decision making */
 short controls[11] = { -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
