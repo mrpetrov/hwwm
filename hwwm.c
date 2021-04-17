@@ -96,6 +96,14 @@ const char *sensor_names[TOTALSENSORS+1] = { "zero", "furnace", "solar collector
 #define   TboilerLowPrev        sensors_prv[4]
 #define   TenvPrev                sensors_prv[5]
 
+/* TenvArr == Array of last minute or so environment temp readings, used
+to calculate an average, which gets used to decide to heat, cool or stay idle */
+float TenvArr[12] = { 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20 };
+/* TenvArr_lu holds the index of the last updated TenvArr element */
+short TenvArr_lu = 0;
+/* and the average environment temp var itself */
+float TenvAvrg = 20;
+
 /* HTTB == Hourly Target Temp Base for furnace water; NB 24:00 = 0;
  *  hwwm will get to the real target by substracting the outside temp
  *  from the values defined in this array */
