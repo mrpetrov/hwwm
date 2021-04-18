@@ -1331,7 +1331,6 @@ GetCurrentTime() {
     sprintf( data + strlen(data), " fwt=%5.3f", furnace_water_target);
     bha = ((float)current_timer_minutes)/60.0;
     sprintf( data + strlen(data), " bha1=%5.3f", bha);
-    bha *= HTTBh[next_timer_hour] - HTTBh[current_timer_hour];
     if (HPmode == HEAT) {
         bha *= HTTBh[next_timer_hour] - HTTBh[current_timer_hour];
     } else {
