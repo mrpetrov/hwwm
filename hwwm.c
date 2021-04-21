@@ -107,8 +107,8 @@ float TenvAvrg = 20;
 /* HTTB == Hourly Target Temp Base for furnace water; NB 24:00 = 0;
  *  hwwm will get to the target temp from the values defined here */
 /* HTTBh - HTTB heat */
-/*                             0    1    2    3    4    5    6    7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
-short HTTBh[24] = { 27, 26, 26, 26, 27, 29, 32, 33, 34, 34, 35, 34, 34, 34, 35, 34, 34, 34, 33, 34, 34, 33, 32, 29 };
+/*                              0    1    2    3    4    5    6    7    8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
+short HTTBh[24] = { 25, 25, 25, 25, 25, 28, 31, 33, 34, 33, 34, 35, 33, 34, 34, 35, 33, 33, 33, 33, 33, 33, 30, 27 };
 
 /* HTTBc - HTTB cool */
 /*                              0    1    2    3    4    5    6    7    8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
