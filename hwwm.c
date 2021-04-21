@@ -1339,10 +1339,10 @@ GetCurrentTime() {
     sprintf( data + strlen(data), " bha2=%5.3f", bha);
     furnace_water_target += bha;
     sprintf( data + strlen(data), " fwt1=%5.3f", furnace_water_target);
-    /* if the environment temp looks reasonable, make adjustments if really cold */
-    if ( (Tenv > -25) && (Tenv < 40) ) {
-        /* do a smooth sliding correction to target based on outside temp: */
-        furnace_water_target -= ((Tenv-10)*0.125);
+    /* if the average environment temp is in the range, make adjustments */
+    if ( (TenvAvrg > -25) && (TenvAvrg < 10) ) {
+        /* do a smooth sliding correction to target based on average outside temp: */
+        furnace_water_target -= ((TenvAvrg-10)*0.125);
     }
     sprintf( data + strlen(data), " fwt2=%5.3f", furnace_water_target);
     log_message(DATA_FILE, data);
