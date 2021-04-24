@@ -108,7 +108,7 @@ float TenvAvrg = 20;
  *  hwwm will get to the target temp from the values defined here */
 /* HTTBh - HTTB heat */
 /*                              0    1    2    3    4    5    6    7    8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
-short HTTBh[24] = { 25, 25, 25, 25, 25, 28, 31, 33, 34, 33, 34, 35, 33, 34, 34, 35, 33, 33, 33, 33, 33, 33, 30, 27 };
+short HTTBh[24] = { 25, 25, 25, 25, 25, 28, 30, 31, 33, 32, 33, 34, 32, 33, 33, 34, 32, 32, 32, 32, 32, 31, 29, 26 };
 
 /* HTTBc - HTTB cool */
 /*                              0    1    2    3    4    5    6    7    8    9   10  11  12  13  14  15  16  17  18  19  20  21  22  23*/
@@ -1340,9 +1340,14 @@ GetCurrentTime() {
     furnace_water_target += bha;
     sprintf( data + strlen(data), " fwt1=%5.3f", furnace_water_target);
     /* if the average environment temp is in the range, make adjustments */
-    if ( (TenvAvrg > -25) && (TenvAvrg < 10) ) {
+    if ( (TenvAvrg > -25) && (TenvAvrg < 8) ) {
         /* do a smooth sliding correction to target based on average outside temp: */
-        furnace_water_target -= ((TenvAvrg-10)*0.125);
+        furnace_water_target -= ((TenvAvrg-8)*0.2);
+    }
+    /* this one applies higher reduction to the target temp when warm outside */
+    if ( (TenvAvrg > 8) && (TenvAvrg < 14) ) {
+        /* do a smooth sliding correction to target based on average outside temp: */
+        furnace_water_target -= ((TenvAvrg-8)*0.4);
     }
     sprintf( data + strlen(data), " fwt2=%5.3f", furnace_water_target);
     log_message(DATA_FILE, data);
@@ -1520,7 +1525,7 @@ void TurnHeatPumpHighOn() { CHP_high = 1; SCHP_high = 0; }
 /* Return non-zero value if Heat Pumps should HEAT */
 short
 HPshouldHeat() {
-    if ( (TenvAvrg > -2.5) && (TenvAvrg < 16) ) return 1;
+    if ( (TenvAvrg > -2.5) && (TenvAvrg < 13) ) return 1;
     return 0;
 }
 
