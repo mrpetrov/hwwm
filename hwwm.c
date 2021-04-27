@@ -1345,9 +1345,9 @@ GetCurrentTime() {
         furnace_water_target -= ((TenvAvrg-8)*0.2);
     }
     /* this one applies higher reduction to the target temp when warm outside */
-    if ( (TenvAvrg > 8) && (TenvAvrg < 14) ) {
+    if ( (TenvAvrg > 8) && (TenvAvrg < 15) ) {
         /* do a smooth sliding correction to target based on average outside temp: */
-        furnace_water_target -= ((TenvAvrg-8)*0.4);
+        furnace_water_target -= ((TenvAvrg-8)*0.3);
     }
     sprintf( data + strlen(data), " fwt2=%5.3f", furnace_water_target);
     log_message(DATA_FILE, data);
@@ -1525,7 +1525,7 @@ void TurnHeatPumpHighOn() { CHP_high = 1; SCHP_high = 0; }
 /* Return non-zero value if Heat Pumps should HEAT */
 short
 HPshouldHeat() {
-    if ( (TenvAvrg > -2.5) && (TenvAvrg < 13) ) return 1;
+    if ( (TenvAvrg > -2.5) && (TenvAvrg < 14.5) ) return 1;
     return 0;
 }
 
