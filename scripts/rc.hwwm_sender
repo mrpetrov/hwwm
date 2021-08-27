@@ -19,7 +19,7 @@ do
             continue
         fi
         /usr/bin/curl --connect-timeout 1 --max-time 2 --retry 2 --retry-delay 0 --silent --data \
-        "$emoncms_node&data=`cat $json_file`&apikey=$api_key" $emoncms_server
+        "node=$emoncms_node&data=`cat $json_file`&apikey=$api_key" $emoncms_server
 
         res=$?
         if [ "$res" != "0" ]; then
