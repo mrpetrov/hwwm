@@ -1525,7 +1525,7 @@ void TurnHeatPumpHighOn() { CHP_high = 1; SCHP_high = 0; }
 /* Return non-zero value if Heat Pumps should HEAT */
 short
 HPshouldHeat() {
-    if ( (TenvAvrg > -2.5) && (TenvAvrg < 14.5) ) return 1;
+    if ( (TenvAvrg > -2.5) && (TenvAvrg < 16) ) return 1;
     return 0;
 }
 
