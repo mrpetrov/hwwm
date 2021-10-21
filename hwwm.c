@@ -1683,11 +1683,15 @@ ComputeWantedState() {
             }
         } else {            /* 1 big consumers */
         sprintf( data + strlen(data), " htr-3-1");
-            /* if the other big consumers can be OFF and heater ON - try it */
-            if (CanTurnHeaterOn() || CHeater) {
+			/* FIXME: HP must be off or if on - it must be able to switch off */
+			if (!CHP_low || CanTurnHeatPumpLowOff() ) {
         sprintf( data + strlen(data), " htr-3-2");
-                wantHon = 1;
-            }
+				/* if the other big consumers can be OFF and heater ON - try it */
+				if (CanTurnHeaterOn() || CHeater) {
+        sprintf( data + strlen(data), " htr-3-3");
+					wantHon = 1;
+				}
+			}
         }
     }
 
