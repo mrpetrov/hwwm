@@ -693,7 +693,7 @@ parse_config()
     /* stuff for after parsing config file: */
     /* calculate maximum possible temp for use in night_boost case; consider this: getting too hot causes calcium
        build-up in the tank; keeping in too low (30 to 45) makes for a perfect bacteria environment */
-    nightEnergyTemp = ((float)cfg.wanted_T + 6);
+    nightEnergyTemp = ((float)cfg.wanted_T + 10);
     if (nightEnergyTemp > (float)cfg.abs_max) { nightEnergyTemp = (float)cfg.abs_max; }
     NBC_original = cfg.max_big_consumers;
 }
