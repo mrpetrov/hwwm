@@ -318,7 +318,7 @@ void
 rangecheck_wanted_temp( int temp )
 {
     if (temp < 25) temp = 25;
-    if (temp > 62) temp = 62;
+    if (temp > 52) temp = 52;
 }
 
 void
