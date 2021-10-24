@@ -1641,25 +1641,28 @@ ComputeWantedState() {
     /* Turn furnace pump on every 2 hours */
     if ( (!CPump1) && (SCPump1 > (6*60*2)) ) wantP1on = 1;
 
+    sprintf( data, "compute: " );
     /* ELECTRICAL HEATER: SMART FUNCTIONS */
     /* At 4 o'clock use night energy tariff to heat up boiler until the lower sensor reads several degrees
        on top of desired temp, clamped at cfg.abs_max, so that less day energy gets used */
     if ( (cfg.night_boost) && (current_timer_hour == 4) ) {
         if (TboilerLow < nightEnergyTemp) {
+            sprintf( data + strlen(data), " NB");
             wantHon = 1;
         }
     }
     /* During night tariff, once every 30 days - heat the boiler to near 70 C to kill all possible legionella build-up;
        wikipedia says that above 66 C legionella dies within 2 minutes */
     if ( (SsinceLastLegionella > 6*60*24*30) && (current_timer_hour >= 2) && (current_timer_hour <= NEstop) ) {
+        sprintf( data + strlen(data), " LGL");
         if (TboilerLow < 67) {
+            sprintf( data + strlen(data), "h");
             wantHon = 1;
         } else { 
             SsinceLastLegionella = 0; 
         }
     }
 
-    sprintf( data, "compute: " );
     if ( BoilerNeedsHeat() ) sprintf( data + strlen(data), " BNH");
 
     /* ELECTRICAL HEATER: BULK HEATING */
