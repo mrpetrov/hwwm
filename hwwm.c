@@ -1232,8 +1232,6 @@ GetCurrentTime() {
     short adjusted = 0;
     short must_check = 0;
     unsigned short current_day_of_month = 0;
-    unsigned short next_timer_hour = 0;
-    float bha = 0; /* between hours adjustment */
     static char data[280];
 	
 	ReWrite_CFG_TABLE_FILE();
@@ -1247,8 +1245,6 @@ GetCurrentTime() {
     /* get current hour minutes */
     strftime( buff, sizeof buff, "%M", t_struct );
     current_timer_minutes = atoi( buff );
-    /* calculate next timer hour: if now is 23, next will be 0, but it is already 0 from init */
-    if (current_timer_hour != 23) { next_timer_hour = current_timer_hour + 1; }
     
     if ((current_timer_hour == 8) && ((ProgramRunCycles % (6*60)) == 0)) must_check = 1;
 
@@ -1322,22 +1318,6 @@ GetCurrentTime() {
         furnace_water_target = HTTBh[current_timer_hour];
     } else {
         furnace_water_target = HTTBc[current_timer_hour];
-    }
-    sprintf( data + strlen(data), " fwt=%5.3f", furnace_water_target);
-    bha = ((float)current_timer_minutes)/60.0;
-    sprintf( data + strlen(data), " bha1=%5.3f", bha);
-    if (HPmode == HEAT) {
-        bha *= HTTBh[next_timer_hour] - HTTBh[current_timer_hour];
-    } else {
-        bha *= HTTBc[next_timer_hour] - HTTBc[current_timer_hour];
-    }
-    sprintf( data + strlen(data), " bha2=%5.3f", bha);
-    furnace_water_target += bha;
-    sprintf( data + strlen(data), " fwt1=%5.3f", furnace_water_target);
-    /* if the average environment temp is in the range, make adjustments */
-    if ( (TenvAvrg > -25) && (TenvAvrg < 17) ) {
-        /* do a smooth sliding correction to target based on average outside temp: */
-        furnace_water_target -= ((TenvAvrg-10)*0.2);
     }
     sprintf( data + strlen(data), " fwt2=%5.3f", furnace_water_target);
     log_message(DATA_FILE, data);
