@@ -1,0 +1,112 @@
+#!/bin/bash
+#
+# rc.hwwm_ha_interfacer
+#
+
+log_opts="-p user.warning -t /etc/rc.hwwm_ha_interfacer"
+sleep_time="142"
+ha_server="http://ha.my.localnet:8123/api/states/"
+ha_ht="climate.homethermostat"
+ha_hpa="switch.hp_acs_allowed_vs1"
+ha_ba="switch.boiler_allowed_vs1"
+api_auth="Authorization: Bearer ___ha_long_term_auth_code___"
+api_h2="Content-Type: application/json"
+interfacer_file="/run/shm/hwwm_ha_int_file"
+
+logger $log_opts "Starting operations"
+while [ true ]
+do
+        /bin/sleep $sleep_time
+
+        /usr/bin/curl --connect-timeout 1 --max-time 2 --retry 2 --retry-delay 0 --silent \
+         -H "$api_auth" -H "$api_h2" "$ha_server$ha_ht" > /run/shm/hwwm_int_$ha_ht
+
+        res1=$?
+        if [ "$res1" != "0" ]; then
+                logger $log_opts "curl failed with code: $res"
+                logger $log_opts "retrying in a while..."
+                res3="nan"
+                /bin/sleep 3
+       else
+                # no errors - curl succeded at task given
+                # now try to parse received json
+                python3 -c "import sys, json; print(json.load(sys.stdin)['attributes']['temperature'])" < /run/shm/hwwm_int_$ha_ht
+                res2=$?
+                if [ "$res2" == "0" ]; then
+                    # on success - add
+                    res3=$(python3 -c "import sys, json; print(json.load(sys.stdin)['attributes']['temperature'])" < /run/shm/hwwm_int_$ha_ht)
+                fi
+        fi
+        if [ "$res3" == "nan" ]; then 
+            rm $interfacer_file
+            continue
+        fi
+        echo "target_temp=$res3" >$interfacer_file
+
+        /usr/bin/curl --connect-timeout 1 --max-time 2 --retry 2 --retry-delay 0 --silent \
+         -H "$api_auth" -H "$api_h2" "$ha_server$ha_hpa" > /run/shm/hwwm_int_$ha_hpa
+
+        res1=$?
+        if [ "$res1" != "0" ]; then
+                logger $log_opts "curl failed with code: $res"
+                logger $log_opts "retrying in a while..."
+                res3="nan"
+                /bin/sleep 3
+       else
+                # no errors - curl succeded at task given
+                # now try to parse received json
+                python3 -c "import sys, json; print(json.load(sys.stdin)['state'])" < /run/shm/hwwm_int_$ha_hpa
+                res2=$?
+                if [ "$res2" == "0" ]; then
+                    # on success - add
+                    res3=$(python3 -c "import sys, json; print(json.load(sys.stdin)['state'])" < /run/shm/hwwm_int_$ha_hpa)
+                fi
+        fi
+        if [ "$res3" == "nan" ]; then 
+            rm $interfacer_file
+            continue
+        fi
+        if [ "$res3" == "on" ]; then 
+            echo "acs_allowed=1" >>$interfacer_file
+        fi
+        if [ "$res3" == "off" ]; then 
+            echo "acs_allowed=0" >>$interfacer_file
+        fi
+
+        /usr/bin/curl --connect-timeout 1 --max-time 2 --retry 2 --retry-delay 0 --silent \
+         -H "$api_auth" -H "$api_h2" "$ha_server$ha_ba" > /run/shm/hwwm_int_$ha_ba
+
+        res1=$?
+        if [ "$res1" != "0" ]; then
+                logger $log_opts "curl failed with code: $res"
+                logger $log_opts "retrying in a while..."
+                res3="nan"
+                /bin/sleep 3
+       else
+                # no errors - curl succeded at task given
+                # now try to parse received json
+                python3 -c "import sys, json; print(json.load(sys.stdin)['state'])" < /run/shm/hwwm_int_$ha_ba
+                res2=$?
+                if [ "$res2" == "0" ]; then
+                    # on success - add
+                    res3=$(python3 -c "import sys, json; print(json.load(sys.stdin)['state'])" < /run/shm/hwwm_int_$ha_ba)
+                fi
+        fi
+        if [ "$res3" == "nan" ]; then 
+            rm $interfacer_file
+            continue
+        fi
+        if [ "$res3" == "on" ]; then 
+            echo "boiler_allowed=1" >>$interfacer_file
+        fi
+        if [ "$res3" == "off" ]; then 
+            echo "boiler_allowed=0" >>$interfacer_file
+        fi
+done
+
+#dt=$(date '+%Y-%m-%d %H:%M:%S');
+logger $log_opts "WOW! This should never ever get in the logs..."
+logger $log_opts "WOW! If we somehow reach here - call the GURU MEDIATION experts!"
+exit 0
+
+#EOF

@@ -36,6 +36,9 @@ sleep 8
 # start emoncms sender
 /etc/rc.hwwm_sender >>/run/shm/hwwm_sender_log &
 
+# start hwwm Home Assistant interfacer script
+/etc/rc.hwwm_ha_interfacer >>/run/shm/hwwm_ha_interfacer_log &
+
 exit 0
 
 #EOF
