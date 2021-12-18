@@ -43,6 +43,7 @@
 #define TABLE_FILE      "/run/shm/hwwm_current"
 #define JSON_FILE	"/run/shm/hwwm_current_json"
 #define CFG_TABLE_FILE  "/run/shm/hwwm_cur_cfg"
+#define HA_SETTINGS_FILE  "/run/shm/hwwm_ha_int_file"
 #define CONFIG_FILE     "/etc/hwwm.cfg"
 #define PERSISTENCE_FILE      "/var/log/hwwm_persistent"
 
@@ -316,6 +317,13 @@ rangecheck_wanted_temp( int temp )
 {
     if (temp < 25) temp = 25;
     if (temp > 52) temp = 52;
+}
+
+void
+rangecheck_ACs_wanted_temp( float temp )
+{
+    if (temp < 23) temp = 23;
+    if (temp > 38) temp = 38;
 }
 
 void
@@ -788,6 +796,77 @@ ReadPersistentData() {
     log_message(LOG_FILE, buff);
     sprintf( buff, "INFO: Cycles since last legionella purge: %lu", SsinceLastLegionella );
     log_message(LOG_FILE, buff);
+}
+
+void
+ReadHAsettings() {
+    float f = 0;
+    short i = 0;
+    char *s, buff[150];
+    char TT_str[MAXLEN];
+    char ACsA_str[MAXLEN];
+    char BA_str[MAXLEN];
+    static char data[180];
+    strcpy( TT_str, "99" );
+    strcpy( ACsA_str, "0" );
+    strcpy( BA_str, "0" );
+    FILE *fp = fopen( HA_SETTINGS_FILE, "r" );
+    sprintf( data, "-----> ReadHAsettings:" );
+    if (fp == NULL) {
+        sprintf( data + strlen(data), " no HA settings file;" );
+        } else {
+        /* Read next line */
+        while ((s = fgets (buff, sizeof buff, fp)) != NULL)
+        {
+            /* Skip blank lines and comments */
+            if (buff[0] == '\n' || buff[0] == '#')
+            continue;
+
+            /* Parse name/value pair from line */
+            char name[MAXLEN], value[MAXLEN];
+            s = strtok (buff, "=");
+            if (s==NULL) continue;
+            else strncpy (name, s, MAXLEN);
+            s = strtok (NULL, "=");
+            if (s==NULL) continue;
+            else strncpy (value, s, MAXLEN);
+            trim (value);
+
+            /* Copy data in corresponding strings */
+            if (strcmp(name, "target_temp")==0)
+            strncpy (TT_str, value, MAXLEN);
+            else if (strcmp(name, "acs_allowed")==0)
+            strncpy (ACsA_str, value, MAXLEN);
+            else if (strcmp(name, "boiler_allowed")==0)
+            strncpy (BA_str, value, MAXLEN);
+        }
+        /* Close file */
+        fclose (fp);
+    }
+
+    /* Check if we got file open */
+    if (fp == NULL) {
+        sprintf( data + strlen(data), " using internal defaults; ACs target temp=%5.3f, use ACs=%d, el. heater allowed=%d",
+                    furnace_water_target, cfg.use_acs, cfg.use_electric_heater_day );
+    } else  {
+        /* Convert strings to corresponding var type */
+        strcpy( buff, TT_str );
+        f = atof( buff );
+        rangecheck_ACs_wanted_temp( f );
+        furnace_water_target = f;
+        strcpy( buff, ACsA_str );
+        i = atoi( buff );
+        cfg.use_acs = i;
+        /* ^ no need for range check - 0 is OFF, non-zero is ON */
+        strcpy( buff, BA_str );
+        i = atoi( buff );
+        cfg.use_electric_heater_day = i;
+        /* ^ no need for range check - 0 is OFF, non-zero is ON */
+        
+        sprintf( data + strlen(data), " read HA settings: ACs target temp=%5.3f, use ACs=%d, el. heater allowed=%d",
+                    furnace_water_target, cfg.use_acs, cfg.use_electric_heater_day );
+    }
+    log_message( DATA_FILE, data );
 }
 
 int
@@ -1952,7 +2031,8 @@ main(int argc, char *argv[])
         if ( iter == 30 ) {
             iter = 0;
             GetCurrentTime();
-            /* and increase counter controlling writing out persistent power use data */
+            ReadHAsettings();
+            /* and write out persistent power use data every 10 minutes */
             iter_P++;
             if ( iter_P == 2) {
                 iter_P = 0;
