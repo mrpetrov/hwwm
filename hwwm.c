@@ -173,7 +173,6 @@ unsigned long ProgramRunCycles  = 0;
 
 /* timers - current hour and month vars - used in keeping things up to date */
 unsigned short current_timer_hour = 0;
-unsigned short current_timer_minutes = 0;
 unsigned short current_month = 0;
 
 /* array storing the hour at wich to make the solar pump daily run for each month */
@@ -1321,9 +1320,6 @@ GetCurrentTime() {
     /* get current hour */
     strftime( buff, sizeof buff, "%H", t_struct );
     current_timer_hour = atoi( buff );
-    /* get current hour minutes */
-    strftime( buff, sizeof buff, "%M", t_struct );
-    current_timer_minutes = atoi( buff );
     
     if ((current_timer_hour == 8) && ((ProgramRunCycles % (6*60)) == 0)) must_check = 1;
 
@@ -1385,13 +1381,12 @@ GetCurrentTime() {
             }
         }
     }
+    sprintf( data, "------> GetCurrentTime:" );
     if (TenvAvrg > 23) { 
         HPmode = COOL;
     } else { 
         HPmode = HEAT;
     }
-    sprintf( data, "-------> GetCurrentTime:" );
-    sprintf( data + strlen(data), " ctm=%d", current_timer_minutes);
     /* do base furnace water target temp adjusment: sliding target between hourly ones */
     if (HPmode == HEAT) {
         furnace_water_target = HTTBh[current_timer_hour];
