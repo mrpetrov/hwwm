@@ -1577,8 +1577,15 @@ CriticalTempsFound() {
 short
 BoilerNeedsHeat() {
     short ret = 0;
-    /* if both day and night use of electric heater are disabled - return 0 */
-    if (!cfg.use_electric_heater_night && !cfg.use_electric_heater_day) return 0;
+    /* if boiler heater is disabled for the current part of day - return 0 */
+    if ( (current_timer_hour <= NEstop) || (current_timer_hour >= NEstart) )
+    {
+        /* night time */
+        if (!cfg.use_electric_heater_night) return 0;
+    } else {
+        /* day time */
+        if (!cfg.use_electric_heater_day) return 0;
+    }
     if ( Tkotel <  ((float)cfg.wanted_T + 6) )
     {
         if ( TboilerHigh < ((float)cfg.wanted_T) ) ret+=1;
