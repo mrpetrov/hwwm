@@ -181,10 +181,6 @@ unsigned short pump_start_hour_for[13] = { 11, 14, 13, 12, 11, 10, 9, 9, 10, 11,
 /* Comms buffer */
 unsigned short COMMS = 0;
 
-/* Only 1 big consumer hours help vars */
-unsigned short NBC_replaced = 0;
-unsigned short NBC_original = 0;
-
 /* Send bits 
     States:
     0 == ALL OFF
@@ -699,7 +695,6 @@ parse_config()
        build-up in the tank; keeping in too low (30 to 45) makes for a perfect bacteria environment */
     nightEnergyTemp = ((float)cfg.wanted_T + 10);
     if (nightEnergyTemp > (float)cfg.abs_max) { nightEnergyTemp = (float)cfg.abs_max; }
-    NBC_original = cfg.max_big_consumers;
 }
 
 void
@@ -1323,21 +1318,6 @@ GetCurrentTime() {
     
     if ((current_timer_hour == 8) && ((ProgramRunCycles % (6*60)) == 0)) must_check = 1;
 
-    /* for hours 11, 12, 15, 16 - make the maximum big consumers 1 to allow the confident 
-       use of other high powered home appliances and avoid tripping circuit brakers */
-    if ( (current_timer_hour == 11) || (current_timer_hour == 12) || 
-         (current_timer_hour == 15) || (current_timer_hour == 16) ) {
-        if (!NBC_replaced) {
-            NBC_replaced = 1;
-            cfg.max_big_consumers = 1;
-        }
-    } else {
-        if (NBC_replaced) {
-            NBC_replaced = 0;
-            cfg.max_big_consumers = NBC_original;
-        }
-    }
-    
     /* adjust night tariff start and stop hours at program start and
     every day sometime between 8:00 and 9:00 */
     if (( just_started ) || ( must_check )) {
@@ -1445,7 +1425,6 @@ LogData(short HM) {
     }
     else sprintf( data + strlen(data), "    OK!  ");
     if (CPowerByBattery) { sprintf( data + strlen(data), " *UPS*"); }
-    if (NBC_replaced) { sprintf( data + strlen(data), " *1BC*"); }
     sprintf( data + strlen(data), " sendBits:%d COMMS:%d", sendBits, COMMS);
     log_message(DATA_FILE, data);
 
