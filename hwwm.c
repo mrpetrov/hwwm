@@ -1384,8 +1384,10 @@ GetCurrentTime() {
     sprintf( data, "------> GetCurrentTime:" );
     if (TenvAvrg > 23) { 
         HPmode = COOL;
+        sprintf( data + strlen(data), " COOL");
     } else { 
         HPmode = HEAT;
+        sprintf( data + strlen(data), " HEAT");
     }
     /* do base furnace water target temp adjusment: sliding target between hourly ones */
     if (HPmode == HEAT) {
@@ -1393,7 +1395,7 @@ GetCurrentTime() {
     } else {
         furnace_water_target = HTTBc[current_timer_hour];
     }
-    sprintf( data + strlen(data), " fwt2=%5.3f", furnace_water_target);
+    sprintf( data + strlen(data), " fwt=%5.3f", furnace_water_target);
     log_message(DATA_FILE, data);
 }
 
