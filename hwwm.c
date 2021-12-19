@@ -178,7 +178,12 @@ unsigned short current_month = 0;
 /* array storing the hour at wich to make the solar pump daily run for each month */
 unsigned short pump_start_hour_for[13] = { 11, 14, 13, 12, 11, 10, 9, 9, 10, 11, 12, 13, 14 };
 
-/* Comms buffer */
+/* Comms buffer - sent by hpm over dedicate wire
+    States:
+    0 == busy; no changes to state allowed/will be honered
+    1 == busy; can ADD an AC
+    2 == busy; can REMOVE an AC
+    3 == done/request is fullfilled; can change state as desired */
 unsigned short COMMS = 0;
 
 /* Send bits 
