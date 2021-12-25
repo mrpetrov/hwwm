@@ -1830,7 +1830,26 @@ ComputeWantedState() {
     
     /* after the swtich above - request pump 1 only if needed */
     if (wantHPLon) wantP1on = 1;
-    
+
+    /* BOILER HEATING: ALTERNATIVE SOURCES 2*/
+    /* Handle boiler heating by HeatPump ACs as well */
+    if ( (wantHPLon && (SCHP_low>10)) || (wantHPHon) ) {
+        float xtra = 0;
+        if (wantHPLon && (SCHP_low>10)) xtra+=1.6;
+        if (wantHPHon && (SCHP_high>10)) xtra+=1.6;
+        if (xtra>1) {
+            sprintf( data + strlen(data), " X(%1.1f)", xtra );
+            /* Furnace has heat in excess - open the valve so boiler can build up heat while it can */
+            if (((Tkotel+xtra) > (TboilerHigh+2)) || ((Tkotel+xtra) > (TboilerLow+4)))  {
+                wantVon = 1;
+                /* And if valve has been open for 90 seconds - turn furnace pump on */
+                if (CValve && (SCValve >= 9)) wantP1on = 1;
+            }
+            /* Keep valve open while there is still heat to exploit */
+            if ((CValve) && ((Tkotel+xtra) > (TboilerLow+3))) wantVon = 1;
+        }
+    }
+
     if ( wantP1on ) StateDesired |= 1;
     if ( wantP2on ) StateDesired |= 2;
     if ( wantVon )  StateDesired |= 4;
