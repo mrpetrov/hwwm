@@ -194,6 +194,10 @@ unsigned short COMMS = 0;
     3 == 3 all is OFF, because we are powered by BATTERY  */
 unsigned short sendBits = 0;
 
+/* vars to keep original hwwm config values for onces replaced by HA interfacer */
+unsigned short acs_allowed_original = 0;
+unsigned short boiler_allowed_original = 0;
+
 struct cfg_struct
 {
     char    tkotel_sensor[MAXLEN];
@@ -649,6 +653,9 @@ parse_config()
     cfg.use_acs = i;
     /* ^ no need for range check - 0 is OFF, non-zero is ON */
 
+    /* transfer config originals in keeping vars for when HA interfacing fails */
+    acs_allowed_original = cfg.use_acs;
+    boiler_allowed_original = cfg.use_electric_heater_day;
 
     /* Prepare log messages with sensor paths and write them to log file */
     sprintf( buff, "Furnace temp sensor file: %s", cfg.tkotel_sensor );
@@ -845,7 +852,10 @@ ReadHAsettings() {
 
     /* Check if we got file open */
     if (fp == NULL) {
-        sprintf( data + strlen(data), " using internal defaults; ACs target temp=%5.3f, use ACs=%d, el. heater allowed=%d",
+        /* transfer config originals back as hwwm config values */
+        cfg.use_acs = acs_allowed_original;
+        cfg.use_electric_heater_day = boiler_allowed_original;
+        sprintf( data + strlen(data), " using config file settings; ACs target temp=%5.3f, use ACs=%d, el. heater allowed=%d",
                     furnace_water_target, cfg.use_acs, cfg.use_electric_heater_day );
     } else  {
         /* Convert strings to corresponding var type */
