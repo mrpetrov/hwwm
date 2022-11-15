@@ -1627,7 +1627,7 @@ ComputeWantedState() {
     
     /* EVACUATED TUBES COLLECTOR: EXTREMES PROTECTIONS */
     /* If collector is below 4 C and its getting cold - turn pump on to prevent freezing */
-	if ((Tkolektor < 4)&&(Tenv < 2)) wantP2on = 1;
+	if ((Tkolektor < 4)&&(TenvAvrg < 2)) wantP2on = 1;
     /* Prevent ETC from boiling its work fluid away in case all heat targets have been reached
         and yet there is no use because for example the users are away on vacation */
     if (Tkolektor > 65) {
@@ -1644,7 +1644,7 @@ ComputeWantedState() {
 	else {
 		/* below 38 C - check if it is cold to see if we need to run furnace pump:
             if so - run furnace pump at least once every 10 minutes */
-		if ((Tenv < 3)&&(!CPump1)&&(SCPump1 > (10*6))) wantP1on = 1;
+		if ((TenvAvrg < 3)&&(!CPump1)&&(SCPump1 > (10*6))) wantP1on = 1;
 	}
     /* Furnace is above 20 C and rising slowly - turn pump on */
     if ((Tkotel > 20)&&(Tkotel > (TkotelPrev+0.12))) wantP1on = 1;
