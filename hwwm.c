@@ -58,9 +58,6 @@
 #define LOW  0
 #define HIGH 1
 
-/* Maximum difference allowed for data received from sensors between reads, C */
-#define MAX_TEMP_DIFF        7
-
 /* Number of all sensors to be used by the system */
 #define TOTALSENSORS         5
 
@@ -79,6 +76,9 @@ float sensors[TOTALSENSORS+1] = { 0, -200, -200, -200, -200, -200 };
 
 /* previous sensors temperatures - e.g. values from previous to last read */
 float sensors_prv[TOTALSENSORS+1] = { 0, -200, -200, -200, -200, -200 };
+
+/* per sensor maximum allowed temp difference from last read */
+const float mtd[TOTALSENSORS+1] = { 0, 0.5, 1, 0.5, 0.5, 0.3 };
 
 /* sensor names array */
 const char *sensor_names[TOTALSENSORS+1] = { "zero", "furnace", "solar collector",
@@ -1150,15 +1150,15 @@ ReadSensors() {
         if ( new_val != -200 ) {
             if (sensor_read_errors[i]) sensor_read_errors[i]--;
             if (just_started) { sensors_prv[i] = new_val; sensors[i] = new_val; }
-            if (new_val < (sensors[i]-MAX_TEMP_DIFF)) {
-                sprintf( msg, "WARNING: Correcting LOW %6.3f for sensor '%s' with %6.3f.", new_val, sensor_names[i], sensors[i]-MAX_TEMP_DIFF );
+            if (new_val < (sensors[i]-mtd[i])) {
+                sprintf( msg, "WARNING: Correcting LOW %6.3f for sensor '%s' with %6.3f.", new_val, sensor_names[i], sensors[i]-mtd[i] );
                 log_message(LOG_FILE, msg);
-                new_val = sensors[i]-MAX_TEMP_DIFF;
+                new_val = sensors[i]-mtd[i];
             }
-            if (new_val > (sensors[i]+MAX_TEMP_DIFF)) {
-                sprintf( msg, "WARNING: Correcting HIGH %6.3f for sensor '%s' with %6.3f.", new_val, sensor_names[i], sensors[i]+MAX_TEMP_DIFF );
+            if (new_val > (sensors[i]+mtd[i])) {
+                sprintf( msg, "WARNING: Correcting HIGH %6.3f for sensor '%s' with %6.3f.", new_val, sensor_names[i], sensors[i]+mtd[i] );
                 log_message(LOG_FILE, msg);
-                new_val = sensors[i]+MAX_TEMP_DIFF;
+                new_val = sensors[i]+mtd[i];
             }
             sensors_prv[i] = sensors[i];
             sensors[i] = new_val;
