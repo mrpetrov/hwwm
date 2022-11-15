@@ -1142,7 +1142,7 @@ DisableGPIOpins()
 void
 ReadSensors() {
     float new_val = 0;
-    int i;
+    short i, k;
     char msg[100];
 
     for (i=1;i<=TOTALSENSORS;i++) {
@@ -1150,6 +1150,7 @@ ReadSensors() {
         if ( new_val != -200 ) {
             if (sensor_read_errors[i]) sensor_read_errors[i]--;
             if (just_started) { sensors_prv[i] = new_val; sensors[i] = new_val; }
+            if ((just_started > 2)&&(i == 5)) { for (k=0;k<12;k++) { TenvArr[k] = new_val; } }
             if (new_val < (sensors[i]-mtd[i])) {
                 sprintf( msg, "WARNING: Correcting LOW %6.3f for sensor '%s' with %6.3f.", new_val, sensor_names[i], sensors[i]-mtd[i] );
                 log_message(LOG_FILE, msg);
