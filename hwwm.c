@@ -1420,7 +1420,7 @@ LogData(short HM) {
         if (CHP_high) sprintf( data + strlen(data), " HP2");
     }
     if (diff) {
-        sprintf( data + strlen(data), " MISSING:");
+        sprintf( data + strlen(data), " DIFF:");
         if (diff&1) sprintf( data + strlen(data), " P1");
         if (diff&2) sprintf( data + strlen(data), " P2");
         if (diff&4) sprintf( data + strlen(data), " V");
