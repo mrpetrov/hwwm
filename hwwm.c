@@ -1440,7 +1440,7 @@ LogData(short HM) {
     sprintf( data, ",Temp1,%5.3f\n_,Temp2,%5.3f\n_,Temp3,%5.3f\n_,Temp4,%5.3f\n_,Temp5,%5.3f\n"\
     "_,Pump1,%d\n_,Pump2,%d\n_,Valve,%d\n_,Heater,%d\n_,PoweredByBattery,%d\n"\
     "_,TempWanted,%d\n_,BoilerTabsMax,%d\n_,ElectricityUsed,%5.3f\n_,ElectricityUsedNT,%5.3f",\
-    Tkotel, Tkolektor, TboilerHigh, TboilerLow, Tenv, CPump1, CPump2,\
+    Tkotel, Tkolektor, TboilerHigh, TboilerLow, TenvAvrg, CPump1, CPump2,\
     CValve, CHeater, CPowerByBattery, cfg.wanted_T, cfg.abs_max,\
     TotalPowerUsed, NightlyPowerUsed );
     log_msg_ovr(TABLE_FILE, data);
@@ -1448,7 +1448,7 @@ LogData(short HM) {
     sprintf( data, "{Tkotel:%5.3f,Tkolektor:%5.3f,TboilerH:%5.3f,TboilerL:%5.3f,Tenv:%5.3f,"\
     "PumpFurnace:%d,PumpSolar:%d,Valve:%d,Heater:%d,PoweredByBattery:%d,"\
     "TempWanted:%d,BoilerTabsMax:%d,ElectricityUsed:%5.3f,ElectricityUsedNT:%5.3f}",\
-    Tkotel, Tkolektor, TboilerHigh, TboilerLow, Tenv, CPump1, CPump2,\
+    Tkotel, Tkolektor, TboilerHigh, TboilerLow, TenvAvrg, CPump1, CPump2,\
     CValve, CHeater, CPowerByBattery, cfg.wanted_T, cfg.abs_max,\
     TotalPowerUsed, NightlyPowerUsed );
     log_msg_cln(JSON_FILE, data);
