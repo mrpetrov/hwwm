@@ -1,0 +1,26 @@
+#!/bin/bash
+
+daemon=hwwm
+daemon_pid=/run/$daemon.pid
+log_file=/var/log/$daemon.log
+
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root or use sudo $0"
+  exit 255
+fi
+
+echo "Trying to kill running '$daemon' to restart it..."
+if [ ! -e $daemon_pid ]
+then
+    killall -e $daemon
+else
+    echo "No running '$daemon' found. Clearing pid file."
+    kill `cat $daemon_pid`
+    rm -f $daemon_pid
+fi
+#sleep 5
+#echo "Replacing /usr/sbin/$daemon with the one from /home/pi/$daemon..."
+#cp /home/pi/$daemon/$daemon /usr/sbin
+sleep 1
+echo "Here is the log:"
+tail -n 30 $log_file

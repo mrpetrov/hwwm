@@ -1,0 +1,18 @@
+#!/bin/bash
+
+daemon=hwwm
+daemon_pid=/run/$daemon.pid
+log_file=/var/log/$daemon.log
+complevel=7
+start=`date +%s`
+backupfilename=hwwm-$(hostname -s)-$(date +%F--%H-%m).tar.bz2
+backupfolder="/root"
+
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root or use sudo $0"
+  exit 255
+fi
+
+printf "$(tput setaf 3)Creating tar.bz2 archive of $daemon settings files.\nWorking using 1 thread (bzip2)...$(tput sgr0)"
+tar -I "bzip2 -$complevel" -cf $backupfolder/$backupfilename /etc/hwwm.cfg /etc/rc.hwwm_sender /etc/rc.hwwm_ha_interfacer /etc/monit/conf-available/hwwm /etc/monit/monitrc /etc/init.d/hwwm /etc/logrotate.d/hwwm /etc/logrotate.d/monit /etc/cron.hourly/move-hwwm-log /var/log/hwwm*  >$backupfolder/$backupfilename.warn 2>&1
+printf "$(tput setaf 2)Done.$(tput sgr0)\n"
